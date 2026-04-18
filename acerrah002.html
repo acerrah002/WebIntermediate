@@ -2,10 +2,10 @@
 <html lang="en">
 <head></head>
 <body>
-<h1>Acerra</h1>
+<h1 id="usernamedisplay"></h1>
 <p>Contact Information</p>
-<a href="https://github.com/acerrah002">Github</a>
-<a href="https://github.com/acerrah002"><img id = "github-profile" src="https://github.com" alt="acerrah002" ></a>
+<a class = "LinkToGithub" id = "test" >Github</a>
+<a class = "LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
 
 <style>
     #github-profile {
@@ -27,6 +27,9 @@ async function getGithubProfile(){
         }
         const data = await response.json();
         document.getElementById('github-profile').src = data.avatar_url;
+        document.getElementById('github-profile').alt = username;
+        document.getElementsByClassName('LinkToGithub').href = "github.com/acerrah002";
+        document.getElementById('usernamedisplay').textContent = username;
     }    
     catch (error) {
         console.error('Error fetching GitHub profile:', error);
