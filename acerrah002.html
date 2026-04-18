@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
 <body>
 
 <div id="container">
@@ -10,12 +13,16 @@
 <a class = "LinkToGithub" id = "test" >Github</a>
 <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
 <p>Interest and Skills</p>
-<ul>
-    <li>Python</li>
 
-
-
-</ul>
+ <div class="Slideshow">
+        <button id="Backwards" class="scrollbtn"><</button>
+        <img id="imageslideBefore">
+        <figure>
+            <img id="imageslide">
+            <figcaption id="imagedescription"></figcaption>
+        </figure>
+        <img id="imageslideAfter">
+        <button id="Forwards" class="scrollbtn">></button>
 </div>
 
 <style>
@@ -41,6 +48,8 @@
     width:200px;
     }
 </style>
+
+<script src="javascript.js"></script>
 
 <script>
 async function getGithubProfile(){
