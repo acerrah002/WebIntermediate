@@ -5,12 +5,7 @@
 .Slideshow{
     display: flex;
     align-items: center;
-    position: absolute;
     gap: 10px;
-    top: 60%;
-    left: 50%;
-    transform: translate(-50%, 0%);
-
 }
 .scrollbtn{
     border-radius: 25px;
