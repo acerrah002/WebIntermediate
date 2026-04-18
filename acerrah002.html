@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
+<head>
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+</head>
 <body>
 
 <div id="container">
@@ -9,6 +12,17 @@
 <p id="Bio"></p>
 <a class = "LinkToGithub" id = "test" >Github</a>
 <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
+<p>Interest and Skills</p>
+
+ <div class="Slideshow">
+        <button id="Backwards" class="scrollbtn"><</button>
+        <img id="imageslideBefore">
+        <figure>
+            <img id="imageslide">
+            <figcaption id="imagedescription"></figcaption>
+        </figure>
+        <img id="imageslideAfter">
+        <button id="Forwards" class="scrollbtn">></button>
 </div>
 
 <style>
@@ -16,6 +30,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: rgb(226, 223, 223);
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 25px;
+    }
+
+    #Bio, #usernamedisplay{
+        background-color: white;
+        padding: 30px;
+        border-radius: 25px;
     }
 
     #github-profile {
@@ -24,6 +48,8 @@
     width:200px;
     }
 </style>
+
+<script src="javascript.js"></script>
 
 <script>
 async function getGithubProfile(){
