@@ -7,7 +7,7 @@
     align-items: center;
     position: absolute;
     gap: 10px;
-    top: 50%;
+    top: 60%;
     left: 50%;
     transform: translate(-50%, 0%);
 
@@ -28,12 +28,14 @@
     width:150px;
     height:100px;
     border-radius: 25px;
-    
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: rgb(226, 223, 223);
 }
 figure{
     padding: 10px;
     border-radius: 25px;
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(226, 223, 223);
     
 }
 figcaption{
