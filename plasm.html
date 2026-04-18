@@ -4,19 +4,31 @@
 <body>
 
 <div id="container">
-<h1 id="usernamedisplay"></h1>
-<p id="Bio"></p>
-<a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
-<div id = "interests">
+    <h1 id="usernamedisplay"></h1>
+    <p id="Bio"></p>
+    <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
+
     <div>
-        <h2>Interests:</h2>
-        <ul>
-            <li>Coding</li>
-            <li>Math</li>
-            <li>Video Games</li>
-        </ul>
+        <div>
+            <h2>Interests:</h2>
+            <ul>
+                <li>Coding</li>
+                <li>Math</li>
+                <li>Video Games</li>
+            </ul>
+        </div>
     </div>
-</div>
+
+        <div>
+        <div>
+            <h2>Interests:</h2>
+            <ul>
+                <li>Coding</li>
+                <li>Math</li>
+                <li>Video Games</li>
+            </ul>
+        </div>
+    </div>
 
 </div>
 
@@ -51,7 +63,9 @@ getGithubProfile();
 
 <style>
     body {
-        background-color: rgb(240,255,255)
+        background-color: rgb(240,255,255);
+        height: 100vh;
+        overflow-y: hidden
     }
     p {
         font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
@@ -76,19 +90,39 @@ getGithubProfile();
         width: 200px;
         height: 200px;
     }
-    #container {
+    div#container {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 250px;
         background-color: rgb(209, 238, 238);
         border-radius: 20px;
+        max-height: calc(100% - 20px);
+        overflow-y: auto;
     }
-    #interests {
+
+    ::-webkit-scrollbar {
+        width: 10px
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: rgb(65, 80, 80);
+        border-radius: 5px;
+        
+    }
+
+    div#container div {
         background-color: rgb(240,255,255);
-        margin: 10px;
+        margin-bottom: 10px;
         width: calc(100% - 20px);
         border-radius: 10px;
+    }
+    div#container div div {
+        margin: 10px;
+    }
+
+    #headerbox {
+
     }
 </style>
 
