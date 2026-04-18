@@ -1,18 +1,18 @@
 //This is a 2D array with 2 elemtns inside each item Image and Description this is scaleable just add another element and use the image and description as template
 const classes = [{
-        image: "Roblox.png",
+        image: "Henryimg/Roblox.png",
         description: "A Bunch of Roblox TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT. TEXT TEXT TEXT TEXT TEXT."
     },
     {
-        image: "python-logo-only.png",
+        image: "Henryimg/python-logo-only.png",
         description: "A Bunch of Python TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT. TEXT TEXT TEXT TEXT TEXT"
     },
     {
-        image: "code.png",
+        image: "Henryimg/code.png",
         description: "A Bunch of Website TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT. TEXT TEXT TEXT TEXT TEXT."
     },
     {
-        image: "Ccoding.png",
+        image: "Henryimg/Ccoding.png",
         description: "A Bunch of C programing TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT TEXT. TEXT TEXT TEXT TEXT TEXT."
     }
 ];
