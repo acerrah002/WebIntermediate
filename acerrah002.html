@@ -3,7 +3,8 @@
 <head></head>
 <body>
 <h1 id="usernamedisplay"></h1>
-<p>Contact Information</p>
+<p>Bio</p>
+<p id="Bio"></p>
 <a class = "LinkToGithub" id = "test" >Github</a>
 <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
 
@@ -26,6 +27,7 @@ async function getGithubProfile(){
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
+        document.getElementById('Bio').textContent = data.bio;
         document.getElementById('github-profile').src = data.avatar_url;
         document.getElementById('github-profile').alt = username;
         const nodes = document.getElementsByClassName('LinkToGithub');
