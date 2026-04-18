@@ -5,7 +5,7 @@
 <h1 id="usernamedisplay"></h1>
 <p>Contact Information</p>
 <a class = "LinkToGithub" id = "test" >Github</a>
-<a class = "LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
+<a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
 
 <style>
     #github-profile {
@@ -28,7 +28,10 @@ async function getGithubProfile(){
         const data = await response.json();
         document.getElementById('github-profile').src = data.avatar_url;
         document.getElementById('github-profile').alt = username;
-        document.getElementsByClassName('LinkToGithub').href = "github.com/acerrah002";
+        const nodes = document.getElementsByClassName('LinkToGithub');
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].href = `https://github.com/${username}`;
+        }
         document.getElementById('usernamedisplay').textContent = username;
     }    
     catch (error) {
