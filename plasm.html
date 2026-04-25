@@ -1,11 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-<head></head>
-<body>
-<h1>Plasma</h1>
-<p>Contact Information</p>
-<a href="https://github.com/plasmaHD2">Github</a>
+    <head></head>
 
+    <body>
 
-</body>
+        <!--SIDEBAR-->
+        <div id="sidebar">
+            <h1 id="usernamedisplay"></h1>
+            <p id="Bio"></p>
+            <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
+
+            <div>
+                <div>
+                    <h2>Interests:</h2>
+                    <ul>
+                        <li>Coding</li>
+                        <li>Math</li>
+                        <li>Video Games</li>
+                    </ul>
+                </div>
+            </div>
+
+            </div>
+        </div>
+
+        <!--PAGE-->
+        <div id = "page">
+
+        </div>
+    <script>
+
+    async function getGithubProfile(){
+        const username = "plasmaHD2"
+        const apiUrl = `https://api.github.com/users/${username}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            document.getElementById('Bio').textContent = data.bio;
+            document.getElementById('github-profile').src = data.avatar_url;
+            document.getElementById('github-profile').alt = username;
+            const nodes = document.getElementsByClassName('LinkToGithub');
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].href = `https://github.com/${username}`;
+            }
+            document.getElementById('usernamedisplay').textContent = username;
+        }    
+        catch (error) {
+            console.error('Error fetching GitHub profile:', error);
+        }
+    }
+    getGithubProfile();
+
+    </script>
+
+    <style>
+        body {
+            background-color: rgb(240,255,255);
+            width: 100dvw;
+            height: 100vh;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            display: flex;
+        }
+        p {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        h1 {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        h2 {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        ul {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        a {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+        }
+        img {
+            border-radius: 25%
+        }
+        #github-profile {
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+        }
+        div#sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 250px;
+            background-color: rgb(209, 238, 238);
+            border-radius: 20px;
+            max-height: calc(100% - 20px);
+            overflow-y: block;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(65, 80, 80);
+            border-radius: 5px;
+            
+        }
+
+        div#sidebar div {
+            background-color: rgb(240,255,255);
+            margin-bottom: 10px;
+            width: calc(100% - 20px);
+            border-radius: 10px;
+        }
+        div#sidebar div div {
+            margin: 10px;
+        }
+
+        div#page {
+            background-color: rgb(226, 248, 248);
+            width: 100;
+            height: calc(100% - 20px);
+            border-radius: 20px;
+            margin-left: 10px;
+            margin-right: 18px;
+            flex: 1;
+        }
+
+    </style>
+
+    </body>
 </html>
