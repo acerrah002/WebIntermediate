@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head></head>
+
+    <div class="Slideshow">
+        <button id="Backwards" class="scrollbtn"><</button>
+        <img id="imageslideBefore">
+        <figure>
+            <img id="imageslide">
+            <figcaption id="imagedescription"></figcaption>
+        </figure>
+        <img id="imageslideAfter">
+        <button id="Forwards" class="scrollbtn">></button>
+    </div>
+    <body>
+
+        
+        <div id="sidebar">
+            <h1 id="usernamedisplay"></h1>
+            <p id="Bio"></p>
+            <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
+
+            <div>
+                <div>
+                    <h2>Hobbies</h2>
+                    <ul>
+                        <li>Coding</li>
+                        <li>Basketball</li>
+                        <li>Games</li>
+                    </ul>
+                </div>
+            </div>
+
+            </div>
+        </div>
+
+        <!--PAGE-->
+        <div id = "page">
+
+        </div>
+   
+       <style>
+        body {
+            background-color: rgb(82, 126, 209);
+            width: 100dvw;
+            height: 100vh;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            display: flex;
+        }
+        img {
+            border-radius: 25%
+        }
+
+        div#sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 250px;
+            background-color: rgb(104, 160, 245);
+            border-radius: 20px;
+            max-height: calc(100% - 20px);
+            overflow-y: block;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgb(80, 129, 184);
+            border-radius: 5px;
+            
+        }
+
+        div#sidebar div {
+            background-color: rgb(240,255,255);
+            margin-bottom: 10px;
+            margin: 10px;
+            width: calc(100% - 20px);
+            overflow-y: block;
+            border-radius: 20px;
+        }
+
+
+        div#page {
+            background-color: rgb(104, 160, 245);
+            width: 100;
+            height: calc(100% - 20px);
+            border-radius: 20px;
+            margin-left: 10px;
+            margin-right: 18px;
+            flex: 1;
+        }
+            @media screen and (max-width: 600px) {
+    #Sidebar{
+       color: rgb(212, 16, 16);
+        padding-right: 25%;
+       }
+    }
+    @media screen and (min-width: 601px) {
+    #Sidebar{
+       
+       }
+    }
+    #github-profile {
+    border-radius: 50%;
+    border: 2px solid #000; 
+    width:200px;
+    }
+    </style>
+
+    <script>
+ const classes = [
+  {
+    image: "images/cool.webp",
+    description: "One of my favorite games, Minecraft, an amazing game that I'd let represent my love for video games."
+  },
+
+  {
+    image: "images/code.png",
+    description: "Began coding robots(Spike, Ev3, Arduino), then moved on to Roblox(Lua), and is currently coding python."
+  },
+  {
+    image: "images/sga.webp",
+    description: "My current favorite basketball player, he represents my passion for the sport."
+  }
+];
+</script>
+
+<script src="javascript.js"></script>
+
+   <script>
+    
+    async function getGithubProfile(){
+        const username = "jyzm1215"
+        const apiUrl = `https://api.github.com/users/${username}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            document.getElementById('Bio').textContent = data.bio;
+            document.getElementById('github-profile').src = data.avatar_url;
+            document.getElementById('github-profile').alt = username;
+            const nodes = document.getElementsByClassName('LinkToGithub');
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].href = `https://github.com/${username}`;
+            }
+            document.getElementById('usernamedisplay').textContent = username;
+        }    
+        catch (error) {
+            console.error('Error fetching GitHub profile:', error);
+        }
+    }
+    getGithubProfile();
+
+    </script>
+
+
+
+    </body>
+</html>
