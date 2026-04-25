@@ -7,11 +7,11 @@
 <body>
 
 <!--SideBar-->
-<div id="Sidebar" style="padding-right: 25%;">
+<div id="Sidebar">
 <h3>Menu</h3>
-<p>Stuff1</p>
-<p>Stuff2</p>
-<p>Stuff3</p>
+<button>Bio</button> 
+<button>Stuff2</button>
+<button>Stuff3</button>
 </div>
 
 <!--Rest of page-->
@@ -34,19 +34,31 @@
         <button id="Forwards" class="scrollbtn">></button>
 </div>
 
-<p>Experience</p>
 </div>
 
 <style>
     #Sidebar{
+       padding: 25px;
+       gap: 25px;
+       padding-right: 25%;
        background-color: rgb(151, 200, 131);
        display: inline-block;
+       color: white;
+    }
+    #Sidebar h3{
+        font-size: 25px;     
     }
 
-
+     #Sidebar button{
+        padding: 25px;
+        font-size: 25px;
+        text-align: left;
+        background-color: none;
+    }
     body{
         display: flex;
         gap: 0;
+        background-color: rgb(226, 223, 223);
     }
 
 
@@ -72,6 +84,7 @@
     }
 </style>
 
+<!--Slideshow ELements-->
 <script>
  const classes = [
   {
@@ -91,7 +104,6 @@
     description: "High-performance algorithm design, specializing in optimizing code complexity and Big O notation efficiency."
   }
 ];
- 
 </script>
 
 <script src="javascript.js"></script>
