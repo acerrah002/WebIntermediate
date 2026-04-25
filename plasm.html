@@ -35,17 +35,18 @@
 
         <!--PAGE-->
         <div id = "page">
-            <div class="Slideshow">
-                <button id="Backwards" class="scrollbtn"><</button>
-                <img id="imageslideBefore">
-                <figure>
-                    <img id="imageslide">
-                    <figcaption id="imagedescription"></figcaption>
-                </figure>
-                <img id="imageslideAfter">
-                <button id="Forwards" class="scrollbtn">></button>
+            <div>
+                <div class="Slideshow">
+                    <button id="Backwards" class="scrollbtn"><</button>
+                    <img id="imageslideBefore">
+                    <figure>
+                        <img id="imageslide">
+                        <figcaption id="imagedescription"></figcaption>
+                    </figure>
+                    <img id="imageslideAfter">
+                    <button id="Forwards" class="scrollbtn">></button>
+                </div>
             </div>
-
         </div>
     <script>
 
@@ -101,7 +102,7 @@
 
     <style src = "styles.css"></style>
     <style>
-         body {
+        body {
             margin: 8px;
             background-color: rgb(240,255,255);
             width: 100dvw;
@@ -146,7 +147,7 @@
             background-color: rgb(209, 238, 238);
             border-radius: 20px;
             max-height: calc(100% - 20px);
-            overflow-y: block;
+            overflow-y: auto;
         }
 
         ::-webkit-scrollbar {
@@ -157,6 +158,12 @@
             background-color: rgb(65, 80, 80);
             border-radius: 5px;
             
+        }
+
+        div#sidebar div#headerbox {
+            height: fit-content;
+            padding-top: 10px;
+            padding-bottom: 10px;
         }
 
         div#sidebar div~div {
@@ -178,30 +185,43 @@
             margin-left: 10px;
             margin-right: 18px;
             flex: 1;
+            overflow-y: auto;
         }
 
-        div#page div.Slideshow {
-            margin: 10px;
-            width: calc(100% - 20px);
+        div#page div {
+            height: fit-content;
+            padding-top: 10px;
         }
 
-        div#page div.Slideshow button.scrollbtn {
-            background-color: rgb(240,255,255);
+        div.Slideshow {
+            margin: auto;
+            width: fit-content;
+        }
+
+        div.Slideshow button.scrollbtn {
+            background-color: rgb(209, 240, 240);
             border-width: 0px;
+            width: 30px;
+            height: 60px;
+            border-radius: 20px;
         }
 
-        div#page div.Slideshow img {
-            background-color: rgb(209, 240, 240);
+        div.Slideshow img#imageslideBefore, #imageslideAfter {
+            background-color: rgb(174, 226, 226);
+            padding: 20px;
+            border-radius: 20px;
         }
 
-         div#page div.Slideshow figure {
-            background-color: rgb(209, 240, 240);
-         }
-
-        div#page div.Slideshow figure img {
-            background-color: rgb(240,255,255);
+        div.Slideshow figure {
+            background-color: rgb(150, 211, 211);
+            border-radius: 20px;
         }
 
+        div.Slideshow figure img#imageslide {
+            background-color: rgb(226, 248, 248);
+            padding: 20px;
+            border-radius: 10px;
+        }
     </style>
 
     </body>
