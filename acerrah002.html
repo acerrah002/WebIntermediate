@@ -15,7 +15,7 @@
 </div>
 
 <!--Rest of page-->
-<div id="container" style="margin-left: 0; margin-right: 0;" >
+<div id="container" >
 <h1 id="usernamedisplay"></h1>
 <p>Bio</p>
 <p id="Bio"></p>
@@ -40,9 +40,10 @@
     #Sidebar{
        padding: 25px;
        gap: 25px;
-       padding-right: 25%;
+       padding-right: 15%;
        background-color: rgb(151, 200, 131);
-       display: inline;
+       display: flex;
+       flex-direction: column;
        color: white;
     }
     #Sidebar h3{
@@ -93,6 +94,12 @@
     @media screen and (max-width: 600px) {
     #Sidebar{
        color: rgb(212, 16, 16);
+        padding-right: 25%;
+       }
+    }
+    @media screen and (min-width: 601px) {
+    #Sidebar{
+       
        }
     }
 </style>
