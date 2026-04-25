@@ -6,7 +6,16 @@
 </head>
 <body>
 
-<div id="container">
+<!--SideBar-->
+<div id="Sidebar" style="padding-right: 25%;">
+<h3>Menu</h3>
+<p>Stuff1</p>
+<p>Stuff2</p>
+<p>Stuff3</p>
+</div>
+
+<!--Rest of page-->
+<div id="container" style="margin-left: 0; margin-right: 0;" >
 <h1 id="usernamedisplay"></h1>
 <p>Bio</p>
 <p id="Bio"></p>
@@ -25,7 +34,22 @@
         <button id="Forwards" class="scrollbtn">></button>
 </div>
 
+<p>Experience</p>
+</div>
+
 <style>
+    #Sidebar{
+       background-color: rgb(151, 200, 131);
+       display: inline-block;
+    }
+
+
+    body{
+        display: flex;
+        gap: 0;
+    }
+
+
     #container {
     display: flex;
     flex-direction: column;
@@ -33,7 +57,6 @@
     background-color: rgb(226, 223, 223);
     margin-left: auto;
     margin-right: auto;
-    border-radius: 25px;
     }
 
     #Bio, #usernamedisplay{
@@ -50,23 +73,25 @@
 </style>
 
 <script>
- const classes = [{
-        image: "images/Roblox.png",
-        description: "Luau Programming specialist."
-    },
-    {
-        image: "images/python-logo-only.png",
-        description: "Dynamic OOP Software Engineer"
-    },
-    {
-        image: "images/code.png",
-        description: "Professional Web Developer."
-    },
-    {
-        image: "images/Ccoding.png",
-        description: "Efficent Big O Notation Specialist."
-    }
-];   
+ const classes = [
+  {
+    image: "images/Roblox.png",
+    description: "Immersive 3D world building, Luau scripting, and user experience design within the Roblox Studio engine."
+  },
+  {
+    image: "images/python-logo-only.png",
+    description: "Python development focused on computer vision (OpenCV), web automation (PyWebScript), and game mechanics (Pygame)."
+  },
+  {
+    image: "images/code.png",
+    description: "Full-stack development experience, including relational database design and robust JavaScript backend services."
+  },
+  {
+    image: "images/Ccoding.png",
+    description: "High-performance algorithm design, specializing in optimizing code complexity and Big O notation efficiency."
+  }
+];
+ 
 </script>
 
 <script src="javascript.js"></script>
