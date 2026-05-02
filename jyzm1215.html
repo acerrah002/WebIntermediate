@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <link rel="stylesheet" type="text/css" href="styles.css">
-    <head></head>
+<title>Portfolio</title>
 
-    <div class="Slideshow">
-        <button id="Backwards" class="scrollbtn"><</button>
-        <img id="imageslideBefore">
-        <figure>
-            <img id="imageslide">
-            <figcaption id="imagedescription"></figcaption>
-        </figure>
-        <img id="imageslideAfter">
-        <button id="Forwards" class="scrollbtn">></button>
-    </div>
+
     <body>
 
 
@@ -41,7 +32,16 @@
 
         <!--PAGE-->
         <div id = "page">
-
+                <div class="Slideshow">
+        <button id="Backwards" class="scrollbtn"><</button>
+        <img id="imageslideBefore">
+        <figure>
+            <img id="imageslide">
+            <figcaption id="imagedescription"></figcaption>
+        </figure>
+        <img id="imageslideAfter">
+        <button id="Forwards" class="scrollbtn">></button>
+            </div>
         </div>
    
        <style>
@@ -49,9 +49,9 @@
             background-color: rgb(82, 126, 209);
             width: 100dvw;
             height: 100vh;
-            overflow-y: hidden;
-            overflow-x: hidden;
+            overflow: hidden;
             display: flex;
+            margin: 0;
         }
         img {
             border-radius: 25%
@@ -65,7 +65,7 @@
             background-color: rgb(104, 160, 245);
             border-radius: 20px;
             max-height: calc(100% - 20px);
-            overflow-y: block;
+            overflow-y: auto;
         }
 
         ::-webkit-scrollbar {
@@ -98,12 +98,16 @@
 
         div#page {
             background-color: rgb(104, 160, 245);
-            width: 100;
+            width: 100%;
             height: calc(100% - 20px);
             border-radius: 20px;
             margin-left: 10px;
             margin-right: 18px;
             flex: 1;
+
+            display:flex;
+            justify-content: center;
+            align-items: center;
         }
 
 
@@ -153,10 +157,7 @@ async function getGithubProfile(){
         for (let i = 0; i < nodes.length; i++) {
             nodes[i].href = `https://github.com/${username}`;
         }
-        const usernodes = document.getElementsByClassName('usernamedisplay');
-        for (let i = 0; i < usernodes.length; i++) {
-            usernodes[i].textContent = username;
-        };
+        document.getElementById("usernamedisplay").textContent = username;
         const repoResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=3`);
         const repos = await repoResponse.json();
         const repoContainer = document.getElementById('Repo');
