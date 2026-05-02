@@ -2,12 +2,21 @@
 <html lang="en">
     <head></head>
 
-    <body>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 
+    <body>
         <!--SIDEBAR-->
         <div id="sidebar">
-            <h1 id="usernamedisplay"></h1>
-            <p id="Bio"></p>
+            <div id = "headerbox">
+                <h1 id="usernamedisplay"></h1>
+            </div>
+            <div>
+                <div>
+                    <h2>Bio:</h1>
+                    <p id="Bio"></p>
+                </div>
+            </div>
+            
             <a class="LinkToGithub"><img id = "github-profile" src="https://github.com"></a>
 
             <div>
@@ -26,7 +35,28 @@
 
         <!--PAGE-->
         <div id = "page">
-
+            <div>
+                <div id = "spacer"></div>
+                <div>
+                    <h1>Coding Experience:</h1>
+                </div>
+                <div id = "spacer"></div>
+                <div class="Slideshow">
+                    <button id="Backwards" class="scrollbtn"><</button>
+                    <img id="imageslideBefore">
+                    <figure>
+                        <img id="imageslide">
+                        <figcaption id="imagedescription"></figcaption>
+                    </figure>
+                    <img id="imageslideAfter">
+                    <button id="Forwards" class="scrollbtn">></button>
+                </div>
+            </div>
+            <div id = "spacer"></div>
+            <div>
+                <h1>Github Repos:</h1>
+            </div>
+            <div id = "spacer"></div>
         </div>
     <script>
 
@@ -40,7 +70,7 @@
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            document.getElementById('Bio').textContent = data.bio;
+            document.getElementById('Bio').textContent = data.bio || "Nothing yet";
             document.getElementById('github-profile').src = data.avatar_url;
             document.getElementById('github-profile').alt = username;
             const nodes = document.getElementsByClassName('LinkToGithub');
@@ -57,8 +87,33 @@
 
     </script>
 
+    <script>
+        const classes = [
+            {
+                image: "images/Roblox.png",
+                description: "Immersive 3D world building, Luau scripting, and user experience design within the Roblox Studio engine."
+            },
+            {
+                image: "images/python-logo-only.png",
+                description: "Python development focused on computer vision (OpenCV), web automation (PyWebScript), and game mechanics (Pygame)."
+            },
+            {
+                image: "images/code.png",
+                description: "Full-stack development experience, including relational database design and robust JavaScript backend services."
+            },
+            {
+                image: "images/Ccoding.png",
+                description: "High-performance algorithm design, specializing in optimizing code complexity and Big O notation efficiency."
+            }
+        ]
+    </script>
+
+    <script src="javascript.js"></script>
+
+    <style src = "styles.css"></style>
     <style>
         body {
+            margin: 8px;
             background-color: rgb(240,255,255);
             width: 100dvw;
             height: 100vh;
@@ -81,6 +136,10 @@
         a {
             font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
         }
+        figcaption {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
         img {
             border-radius: 25%
         }
@@ -88,6 +147,7 @@
             border-radius: 50%;
             width: 200px;
             height: 200px;
+            margin: 8px;
         }
         div#sidebar {
             display: flex;
@@ -97,7 +157,7 @@
             background-color: rgb(209, 238, 238);
             border-radius: 20px;
             max-height: calc(100% - 20px);
-            overflow-y: block;
+            overflow-y: auto;
         }
 
         ::-webkit-scrollbar {
@@ -110,11 +170,18 @@
             
         }
 
-        div#sidebar div {
+        div#sidebar div#headerbox {
+            height: fit-content;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        div#sidebar div~div {
             background-color: rgb(240,255,255);
             margin-bottom: 10px;
             width: calc(100% - 20px);
             border-radius: 10px;
+            height: auto;
         }
         div#sidebar div div {
             margin: 10px;
@@ -128,8 +195,52 @@
             margin-left: 10px;
             margin-right: 18px;
             flex: 1;
+            overflow-y: auto;
         }
 
+        div#page div {
+            height: fit-content;
+            padding-top: 10px;
+        }
+
+        div#page div#spacer {
+            height: 10px;
+        }
+
+        div#page div h1 {
+            margin: auto;
+            text-align: center;
+        }
+
+        div.Slideshow {
+            margin: auto;
+            width: fit-content;
+        }
+
+        div.Slideshow button.scrollbtn {
+            background-color: rgb(209, 240, 240);
+            border-width: 0px;
+            width: 30px;
+            height: 60px;
+            border-radius: 20px;
+        }
+
+        div.Slideshow img#imageslideBefore, #imageslideAfter {
+            background-color: rgb(174, 226, 226);
+            padding: 20px;
+            border-radius: 20px;
+        }
+
+        div.Slideshow figure {
+            background-color: rgb(150, 211, 211);
+            border-radius: 20px;
+        }
+
+        div.Slideshow figure img#imageslide {
+            background-color: rgb(226, 248, 248);
+            padding: 20px;
+            border-radius: 10px;
+        }
     </style>
 
     </body>
