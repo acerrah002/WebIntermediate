@@ -4,6 +4,7 @@ extends GridContainer
 
 var board_data = []
 var Turns = 0 
+var selected_cell: ColorRect = null
 
 func _ready():
 	columns = 8
@@ -18,11 +19,12 @@ func _ready():
 			var cell = ColorRect.new()
 			cell.custom_minimum_size = Vector2(60, 60)
 			cell.color = Color.POWDER_BLUE if (x + y) % 2 == 0 else Color.LIGHT_GREEN
-			
-			# Enable mouse detection
 			cell.mouse_filter = Control.MOUSE_FILTER_STOP
-			# Pass the 'cell' itself into the function so we can look at its label
+			
+			# Signals for clicking and hovering
 			cell.gui_input.connect(_on_cell_input.bind(cell))
+			cell.mouse_entered.connect(_on_mouse_entered.bind(cell))
+			cell.mouse_exited.connect(_on_mouse_exited.bind(cell))
 			
 			add_child(cell)
 			
@@ -41,17 +43,58 @@ func _ready():
 
 func _on_cell_input(event: InputEvent, cell: ColorRect):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# Access the label (it's the only child of the cell)
 		var label = cell.get_child(0)
-		var text_color = label.get_theme_color("font_color")
+		var piece_color = label.get_theme_color("font_color")
 		
-		print("Text color of this tile is: ", text_color)
+		# --- FIX: Check if piece is the current team OR yellow (highlighted) ---
+		var is_own_piece = (piece_color == Turnrect.color or piece_color == Color.YELLOW)
 		
-		# If you want to check specifically for White or Black:
-		if text_color == Color.WHITE:
-			print("This is a White piece.")
-		elif text_color == Color.BLACK:
-			print("This is a Black piece.")
+		# CASE 1: No piece selected yet
+		if selected_cell == null:
+			if label.text != "" and is_own_piece:
+				selected_cell = cell
+				cell.modulate = Color(1.5, 1.5, 1.5) 
+		
+		# CASE 2: Piece already selected, trying to drop
+		else:
+			if cell == selected_cell:
+				selected_cell.modulate = Color.WHITE
+				selected_cell = null
+				return
+
+			# Cannot drop on your own piece
+			if label.text != "" and is_own_piece:
+				return 
+			
+			move_piece(selected_cell, cell)
+			selected_cell.modulate = Color.WHITE
+			selected_cell = null
+			end_turn()
+
+func move_piece(from_cell: ColorRect, to_cell: ColorRect):
+	var from_label = from_cell.get_child(0)
+	var to_label = to_cell.get_child(0)
+	
+	# Transfer text
+	to_label.text = from_label.text
+	
+	# --- FIX: When dropping, force the color to the turn color ---
+	# This ensures the piece isn't stuck as "Yellow" on the new tile
+	to_label.add_theme_color_override("font_color", Turnrect.color)
+	
+	# Clear source
+	from_label.text = ""
+
+func _on_mouse_entered(cell: ColorRect):
+	var label = cell.get_child(0)
+	if label.text != "" and label.get_theme_color("font_color") == Turnrect.color:
+		label.add_theme_color_override("font_color", Color.YELLOW)
+
+func _on_mouse_exited(cell: ColorRect):
+	var label = cell.get_child(0)
+	# Only reset if we aren't currently "holding" this specific cell
+	if label.get_theme_color("font_color") == Color.YELLOW and cell != selected_cell:
+		label.add_theme_color_override("font_color", Turnrect.color)
 
 func end_turn():
 	Turns += 1
@@ -61,14 +104,7 @@ func update_turn_visual():
 	Turnrect.color = Color.WHITE if Turns % 2 == 0 else Color.BLACK
 
 func get_starting_unit(x, y):
-	if y == 0:
-		var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
-		return units[x]
-	if y == 1:
-		return "P"
-	if y == 6:
-		return "P"
-	if y == 7:
-		var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
-		return units[x]
+	var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+	if y == 0 or y == 7: return units[x]
+	if y == 1 or y == 6: return "P"
 	return ""
