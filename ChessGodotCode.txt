@@ -1,13 +1,13 @@
 extends GridContainer
 
-@onready var Turnrect = $"../TurnRect" # Using @onready is safer for node references
+@onready var Turnrect = $"../TurnRect"
 
 var board_data = []
-var Turns = 0 # White is even (0, 2...), Black is odd (1, 3...)
+var Turns = 0 
 
 func _ready():
 	columns = 8
-	update_turn_visual() # Set the initial color
+	update_turn_visual()
 	
 	for y in range(8):
 		board_data.append([])
@@ -18,6 +18,12 @@ func _ready():
 			var cell = ColorRect.new()
 			cell.custom_minimum_size = Vector2(60, 60)
 			cell.color = Color.POWDER_BLUE if (x + y) % 2 == 0 else Color.LIGHT_GREEN
+			
+			# Enable mouse detection
+			cell.mouse_filter = Control.MOUSE_FILTER_STOP
+			# Pass the 'cell' itself into the function so we can look at its label
+			cell.gui_input.connect(_on_cell_input.bind(cell))
+			
 			add_child(cell)
 			
 			var label = Label.new()
@@ -33,16 +39,26 @@ func _ready():
 				
 			cell.add_child(label)
 
-# Call this function whenever a move is completed
+func _on_cell_input(event: InputEvent, cell: ColorRect):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		# Access the label (it's the only child of the cell)
+		var label = cell.get_child(0)
+		var text_color = label.get_theme_color("font_color")
+		
+		print("Text color of this tile is: ", text_color)
+		
+		# If you want to check specifically for White or Black:
+		if text_color == Color.WHITE:
+			print("This is a White piece.")
+		elif text_color == Color.BLACK:
+			print("This is a Black piece.")
+
 func end_turn():
 	Turns += 1
 	update_turn_visual()
 
 func update_turn_visual():
-	if Turns % 2 == 0:
-		Turnrect.color = Color.WHITE
-	else:
-		Turnrect.color = Color.BLACK
+	Turnrect.color = Color.WHITE if Turns % 2 == 0 else Color.BLACK
 
 func get_starting_unit(x, y):
 	if y == 0:
