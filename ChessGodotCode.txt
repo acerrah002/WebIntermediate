@@ -1,14 +1,13 @@
 extends GridContainer
 
-@onready var Turnrect = $"../TurnRect"
+@onready var Turnrect = $"../TurnRect" # Using @onready is safer for node references
 
 var board_data = []
-var Turns = 0 
-var selected_index = -1 # Stores the 1D index of the piece we picked up
+var Turns = 0 # White is even (0, 2...), Black is odd (1, 3...)
 
 func _ready():
 	columns = 8
-	update_turn_visual()
+	update_turn_visual() # Set the initial color
 	
 	for y in range(8):
 		board_data.append([])
@@ -19,11 +18,6 @@ func _ready():
 			var cell = ColorRect.new()
 			cell.custom_minimum_size = Vector2(60, 60)
 			cell.color = Color.POWDER_BLUE if (x + y) % 2 == 0 else Color.LIGHT_GREEN
-			
-			# Enable mouse detection and connect the click signal
-			cell.mouse_filter = Control.MOUSE_FILTER_STOP
-			cell.gui_input.connect(_on_cell_gui_input.bind(y * 8 + x))
-			
 			add_child(cell)
 			
 			var label = Label.new()
@@ -32,78 +26,33 @@ func _ready():
 			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			
-			# Initial coloring
-			_update_label_visual(label, y)
+			if y >= 6:
+				label.add_theme_color_override("font_color", Color.WHITE)
+			else:
+				label.add_theme_color_override("font_color", Color.BLACK)
+				
 			cell.add_child(label)
 
-func _on_cell_gui_input(event: InputEvent, index: int):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if selected_index == -1:
-			# --- PICK UP PIECE ---
-			var unit = get_unit_at_index(index)
-			if unit != "" and is_correct_turn(index):
-				selected_index = index
-				get_child(index).color = Color.YELLOW # Highlight selection
-		else:
-			# --- DROP PIECE ---
-			if selected_index == index:
-				# Cancel selection if clicking the same square
-				_reset_cell_color(selected_index)
-				selected_index = -1
-			else:
-				move_piece(selected_index, index)
-				selected_index = -1
-
-func move_piece(from_idx: int, to_idx: int):
-	var from_label = get_child(from_idx).get_child(0)
-	var to_label = get_child(to_idx).get_child(0)
-	
-	# Move the text
-	to_label.text = from_label.text
-	from_label.text = ""
-	
-	# Update text colors (White for bottom half, Black for top half logic)
-	# Note: In a real game, you'd track the piece's owner, but for now we use row position
-	_update_label_visual(to_label, floor(to_idx / 8))
-	
-	# Reset the visual color of the 'from' cell
-	_reset_cell_color(from_idx)
-	
-	end_turn()
-
-func is_correct_turn(index: int) -> bool:
-	var row = floor(index / 8)
-	var is_white_turn = (Turns % 2 == 0)
-	# White is rows 6-7, Black is rows 0-1
-	if is_white_turn and row >= 4: return true
-	if not is_white_turn and row <= 3: return true
-	return false
-
-func _update_label_visual(label: Label, row: int):
-	if label.text == "": return
-	# Simple logic: If it moves to the bottom half, it turns white, top half black
-	if row >= 4:
-		label.add_theme_color_override("font_color", Color.WHITE)
-	else:
-		label.add_theme_color_override("font_color", Color.BLACK)
-
-func _reset_cell_color(index: int):
-	var y = floor(index / 8)
-	var x = index % 8
-	get_child(index).color = Color.POWDER_BLUE if (x + y) % 2 == 0 else Color.LIGHT_GREEN
-
-func get_unit_at_index(index: int) -> String:
-	return get_child(index).get_child(0).text
-
+# Call this function whenever a move is completed
 func end_turn():
 	Turns += 1
 	update_turn_visual()
 
 func update_turn_visual():
-	Turnrect.color = Color.WHITE if Turns % 2 == 0 else Color.BLACK
+	if Turns % 2 == 0:
+		Turnrect.color = Color.WHITE
+	else:
+		Turnrect.color = Color.BLACK
 
 func get_starting_unit(x, y):
-	var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
-	if y == 0 or y == 7: return units[x]
-	if y == 1 or y == 6: return "P"
+	if y == 0:
+		var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+		return units[x]
+	if y == 1:
+		return "P"
+	if y == 6:
+		return "P"
+	if y == 7:
+		var units = ["R", "N", "B", "Q", "K", "B", "N", "R"]
+		return units[x]
 	return ""
