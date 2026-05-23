@@ -24,7 +24,7 @@ func PlacePiece(new_colorrect,PieceType,PieceColour):
 func _on_label_gui_input(event):
 	if event is InputEventMouseButton:
 		pass
-	pass	
+pass	
 	
 func _on_label_mouse_entered(TargetPiece):
 	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
