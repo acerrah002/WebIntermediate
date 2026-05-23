@@ -1,0 +1,27 @@
+extends Control
+
+@onready var GridStuff = $GridContainer
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	GridStuff.columns = 8
+	GridStuff.custom_minimum_size = Vector2(40,40)
+	for i in GridStuff.columns:
+		for t in range(8):
+			var new_colorrect = ColorRect.new()
+			if (i+t) % 2 == 0:
+				new_colorrect.color=Color(0.803, 0.81, 0.818, 1.0)
+			else: 
+				new_colorrect.color=Color(0.63, 0.773, 0.456, 1.0)
+			new_colorrect.custom_minimum_size=Vector2(40,40)
+			if i == 1 or i == 6:
+				var new_label = Label.new()
+				new_label.text = "P"
+				new_colorrect.add_child(new_label)
+			GridStuff.add_child(new_colorrect)
+	pass
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
