@@ -20,11 +20,8 @@ func PlacePiece(new_colorrect,PieceType,PieceColour):
 	new_label.add_theme_color_override("font_color", chosen_color)
 	new_label.set_meta("original_color", chosen_color)
 	pass
-	
-func _on_label_gui_input(event):
-	if event is InputEventMouseButton:
-		pass
-pass	
+
+
 	
 func _on_label_mouse_entered(TargetPiece):
 	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
@@ -34,6 +31,30 @@ func _on_label_mouse_exited(TargetPiece):
 	var old_color = TargetPiece.get_meta("original_color")
 	TargetPiece.add_theme_color_override("font_color", old_color)
 	pass
+
+#when we touch the piece
+func _on_label_gui_input(event,TargetPiece):
+	if event is InputEventMouseButton:
+		if event.pressed:
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				currenty_selected_piece = TargetPiece
+			pass
+		pass
+	pass
+pass	
+
+#when we touch the square the piece can go on	
+func _on_square_gui_input(event, TargetSquare):
+	if event is InputEventMouseButton:
+		if event.pressed:
+			if event.button_index == MOUSE_BUTTON_LEFT and currenty_selected_piece != null:
+				currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
+				TargetSquare.add_child(currenty_selected_piece)
+				currenty_selected_piece = null
+			pass
+		pass
+	pass	
+pass
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	GridStuff.columns = 8
@@ -70,6 +91,7 @@ func _ready() -> void:
 				PlacePiece(new_colorrect,"P",1)
 			if i == 6:
 				PlacePiece(new_colorrect,"P",0)
+			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
 			GridStuff.add_child(new_colorrect)
 	pass
 
