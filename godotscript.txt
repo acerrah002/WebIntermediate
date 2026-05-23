@@ -1,6 +1,23 @@
 extends Control
 
 @onready var GridStuff = $GridContainer
+@onready var TurnColour = $TurnColour
+
+var ColourOfPieces = ["WHITE","BLACK"]
+
+func PlacePiece(new_colorrect,PieceType,PieceColour):
+	var new_label = Label.new()
+	
+	new_label.text = PieceType
+	new_colorrect.add_child(new_label)
+	new_label.mouse_filter=Control.MOUSE_FILTER_STOP
+	new_label.mouse_entered.connect(_on_label_mouse_entered.bind(new_label))
+	new_label.mouse_exited.connect(_on_label_mouse_exited.bind(new_label))
+	# Converts "WHITE" or "BLACK" string into an actual Color object
+	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
+	new_label.add_theme_color_override("font_color", chosen_color)
+	new_label.set_meta("original_color", chosen_color)
+	pass
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -14,14 +31,45 @@ func _ready() -> void:
 			else: 
 				new_colorrect.color=Color(0.63, 0.773, 0.456, 1.0)
 			new_colorrect.custom_minimum_size=Vector2(40,40)
-			if i == 1 or i == 6:
-				var new_label = Label.new()
-				new_label.text = "P"
-				new_colorrect.add_child(new_label)
+			if (i == 0 and t == 0) or (i == 0 and t == 7):
+				PlacePiece(new_colorrect,"R",1)
+			if (i == 7 and t == 0) or (i == 7 and t == 7):
+				PlacePiece(new_colorrect,"R",0)
+			if (i == 0 and t == 1) or (i == 0 and t == 6):
+				PlacePiece(new_colorrect,"H",1)
+			if (i == 7 and t == 1) or (i == 7 and t == 6):
+				PlacePiece(new_colorrect,"H",0)
+			if (i == 0 and t == 2) or (i == 0 and t == 5):
+				PlacePiece(new_colorrect,"B",1)
+			if (i == 7 and t == 2) or (i == 7 and t == 5):
+				PlacePiece(new_colorrect,"B",0)
+			if (i == 0 and t == 3):
+				PlacePiece(new_colorrect,"Q",1)
+			if (i == 7 and t == 3):
+				PlacePiece(new_colorrect,"Q",0)
+			if (i == 0 and t == 4):
+				PlacePiece(new_colorrect,"K",1)
+			if (i == 7 and t == 4):
+				PlacePiece(new_colorrect,"K",0)
+			if i == 1:
+				PlacePiece(new_colorrect,"P",1)
+			if i == 6:
+				PlacePiece(new_colorrect,"P",0)
 			GridStuff.add_child(new_colorrect)
 	pass
 
+func playermovepiece():
+	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
+	pass
+	
+func _on_label_mouse_entered(TargetPiece):
+	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
+	pass
+	
+func _on_label_mouse_exited(TargetPiece):
+	var old_color = TargetPiece.get_meta("original_color")
+	TargetPiece.add_theme_color_override("font_color", old_color)
 	pass
