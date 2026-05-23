@@ -8,14 +8,15 @@ var currenty_selected_piece = null
 
 func PlacePiece(new_colorrect,PieceType,PieceColour):
 	var new_label = Label.new()
-	
 	new_label.text = PieceType
 	new_colorrect.add_child(new_label)
 	new_label.mouse_filter=Control.MOUSE_FILTER_STOP
+	#signals for highlighting
 	new_label.mouse_entered.connect(_on_label_mouse_entered.bind(new_label))
 	new_label.mouse_exited.connect(_on_label_mouse_exited.bind(new_label))
+	#signal for moving it
 	new_label.gui_input.connect(_on_label_gui_input.bind(new_label))
-	
+	#changes the colour
 	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
 	new_label.add_theme_color_override("font_color", chosen_color)
 	new_label.set_meta("original_color", chosen_color)
@@ -37,6 +38,7 @@ func _on_label_gui_input(event,TargetPiece):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_LEFT:
+				print("Clicked to move")
 				currenty_selected_piece = TargetPiece
 			pass
 		pass
@@ -48,6 +50,7 @@ func _on_square_gui_input(event, TargetSquare):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_LEFT and currenty_selected_piece != null:
+				print("Clicked to moved")
 				currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
 				TargetSquare.add_child(currenty_selected_piece)
 				currenty_selected_piece = null
@@ -101,4 +104,3 @@ func playermovepiece():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
-	
