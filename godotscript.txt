@@ -4,6 +4,7 @@ extends Control
 @onready var TurnColour = $TurnColour
 
 var ColourOfPieces = ["WHITE","BLACK"]
+var currenty_selected_piece = null
 
 func PlacePiece(new_colorrect,PieceType,PieceColour):
 	var new_label = Label.new()
@@ -13,12 +14,26 @@ func PlacePiece(new_colorrect,PieceType,PieceColour):
 	new_label.mouse_filter=Control.MOUSE_FILTER_STOP
 	new_label.mouse_entered.connect(_on_label_mouse_entered.bind(new_label))
 	new_label.mouse_exited.connect(_on_label_mouse_exited.bind(new_label))
-	# Converts "WHITE" or "BLACK" string into an actual Color object
+	new_label.gui_input.connect(_on_label_gui_input.bind(new_label))
+	
 	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
 	new_label.add_theme_color_override("font_color", chosen_color)
 	new_label.set_meta("original_color", chosen_color)
 	pass
-
+	
+func _on_label_gui_input(event):
+	if event is InputEventMouseButton:
+		pass
+	pass	
+	
+func _on_label_mouse_entered(TargetPiece):
+	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
+	pass
+	
+func _on_label_mouse_exited(TargetPiece):
+	var old_color = TargetPiece.get_meta("original_color")
+	TargetPiece.add_theme_color_override("font_color", old_color)
+	pass
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	GridStuff.columns = 8
@@ -65,11 +80,3 @@ func playermovepiece():
 func _process(delta: float) -> void:
 	pass
 	
-func _on_label_mouse_entered(TargetPiece):
-	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
-	pass
-	
-func _on_label_mouse_exited(TargetPiece):
-	var old_color = TargetPiece.get_meta("original_color")
-	TargetPiece.add_theme_color_override("font_color", old_color)
-	pass
