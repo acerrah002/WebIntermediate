@@ -64,8 +64,11 @@ func _on_square_gui_input(event, TargetSquare):
 					else:
 						#This on the line under me is what actually moves the piece
 						#print("different")
+						#now we should make it so the other piece gets removed
 						currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+						TargetSquare.remove_child(existing_nodes[0])
 						TargetSquare.add_child(currently_selected_piece)
+						
 						
 				else:
 					#print("there is only one piece in this square")
