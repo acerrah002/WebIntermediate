@@ -51,15 +51,26 @@ func _on_square_gui_input(event, TargetSquare):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_LEFT and currenty_selected_piece != null:
-				currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
-				TargetSquare.add_child(currenty_selected_piece)
+				#the variable under me is a list of the children under the node
 				var existing_nodes = TargetSquare.get_children()
+				print((TargetSquare.get_children()).size())
 				#checks if the node has children
-				print("LastSquare")
-				if existing_nodes.size() > 0 :
-					for child in existing_nodes:
-						print(child.get_meta("original_color"), child.get_meta("piece_type"),)
-				
+				#basically if there is two piece we check if the first piece is the same colour as the second
+				if existing_nodes.size() == 1:
+					if existing_nodes[0].get_meta("original_color") == currenty_selected_piece.get_meta("original_color"):
+						#if the condition is true we don't allow the piece to be taken
+						#print("same")
+						pass
+					else:
+						#This on the line under me is what actually moves the piece
+						#print("different")
+						currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
+						TargetSquare.add_child(currenty_selected_piece)
+				else:
+					#print("there is only one piece in this square")
+					currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
+					TargetSquare.add_child(currenty_selected_piece)
+					
 				currenty_selected_piece = null
 			pass
 		pass
