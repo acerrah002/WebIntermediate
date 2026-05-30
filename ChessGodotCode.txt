@@ -122,3 +122,115 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
+
+
+#Additional
+#-----------------------
+#-----------------------
+extends Control
+
+@onready var GridStuff = $GridContainer
+@onready var TurnColour = $TurnColour
+
+var ColourOfPieces = ["WHITE","BLACK"]
+var currently_selected_piece = null
+
+func PlacePiece(new_colorrect, PieceType, PieceColour):
+	var new_label = Label.new()
+	new_label.text = PieceType
+	new_colorrect.add_child(new_label)
+	
+	# 1. Ignore label mouse inputs so they pass through to the tile
+	new_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	# Changes the font colour
+	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
+	new_label.add_theme_color_override("font_color", chosen_color)
+	
+	# Store piece details on the piece itself
+	new_label.set_meta("original_color", chosen_color)
+	new_label.set_meta("piece_type", PieceType)
+
+# 2. Hovering highlights the TILE (ColorRect) now
+func _on_tile_mouse_entered(TargetSquare):
+	TargetSquare.color = Color.YELLOW
+
+func _on_tile_mouse_exited(TargetSquare):
+	# Restore the tile's original board color from meta
+	var old_color = TargetSquare.get_meta("board_color")
+	TargetSquare.color = old_color
+
+# 3. Consolidated Click Input: Handles selection AND movement
+func _on_square_gui_input(event, TargetSquare):
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			var existing_nodes = TargetSquare.get_children()
+			
+			# CASE A: Clicked a tile to SELECT a piece
+			if currently_selected_piece == null:
+				if existing_nodes.size() == 1:
+					currently_selected_piece = existing_nodes[0]
+					print("Selected piece: ", currently_selected_piece.get_meta("piece_type"))
+			
+			# CASE B: Clicked a tile to MOVE a piece
+			else:
+				# If there is already a piece on the target square
+				if existing_nodes.size() == 1:
+					var target_piece = existing_nodes[0]
+					
+					# Check if it is a teammate
+					if target_piece.get_meta("original_color") == currently_selected_piece.get_meta("original_color"):
+						# Select the teammate instead of moving
+						currently_selected_piece = target_piece
+						print("Switched selection to teammate")
+					else:
+						# Capture enemy piece
+						currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+						TargetSquare.remove_child(target_piece)
+						TargetSquare.add_child(currently_selected_piece)
+						currently_selected_piece = null
+				
+				# Empty square: just move
+				else:
+					currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+					TargetSquare.add_child(currently_selected_piece)
+					currently_selected_piece = null
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	GridStuff.columns = 8
+	GridStuff.custom_minimum_size = Vector2(40,40)
+	
+	for i in GridStuff.columns:
+		for t in range(8):
+			var new_colorrect = ColorRect.new()
+			
+			# Determine board pattern colors
+			var base_color = Color(0.803, 0.81, 0.818, 1.0) if (i+t) % 2 == 0 else Color(0.63, 0.773, 0.456, 1.0)
+			new_colorrect.color = base_color
+			new_colorrect.custom_minimum_size = Vector2(40,40)
+			
+			# 4. Store the original tile color so we can clear highlights safely
+			new_colorrect.set_meta("board_color", base_color)
+			
+			# Spawning Logic
+			if (i == 0 and t == 0) or (i == 0 and t == 7): PlacePiece(new_colorrect,"R",1)
+			if (i == 7 and t == 0) or (i == 7 and t == 7): PlacePiece(new_colorrect,"R",0)
+			if (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect,"H",1)
+			if (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect,"H",0)
+			if (i == 0 and t == 2) or (i == 0 and t == 5): PlacePiece(new_colorrect,"B",1)
+			if (i == 7 and t == 2) or (i == 7 and t == 5): PlacePiece(new_colorrect,"B",0)
+			if (i == 0 and t == 3): PlacePiece(new_colorrect,"Q",1)
+			if (i == 7 and t == 3): PlacePiece(new_colorrect,"Q",0)
+			if (i == 0 and t == 4): PlacePiece(new_colorrect,"K",1)
+			if (i == 7 and t == 4): PlacePiece(new_colorrect,"K",0)
+			if i == 1: PlacePiece(new_colorrect,"P",1)
+			if i == 6: PlacePiece(new_colorrect,"P",0)
+			
+			# 5. Connect hover signals directly to the tile
+			new_colorrect.mouse_entered.connect(_on_tile_mouse_entered.bind(new_colorrect))
+			new_colorrect.mouse_exited.connect(_on_tile_mouse_exited.bind(new_colorrect))
+			
+			# Connect click signals to the tile
+			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
+			GridStuff.add_child(new_colorrect)
