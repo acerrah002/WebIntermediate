@@ -10,7 +10,7 @@ func PlacePiece(new_colorrect,PieceType,PieceColour):
 	var new_label = Label.new()
 	new_label.text = PieceType
 	new_colorrect.add_child(new_label)
-	new_label.mouse_filter=Control.MOUSE_FILTER_STOP
+	new_label.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	#signals for highlighting
 	new_label.mouse_entered.connect(_on_label_mouse_entered.bind(new_label))
 	new_label.mouse_exited.connect(_on_label_mouse_exited.bind(new_label))
@@ -23,8 +23,7 @@ func PlacePiece(new_colorrect,PieceType,PieceColour):
 	new_label.set_meta("piece_type", PieceType)
 	pass
 
-
-	
+#when we hover over the label <-- change this to be the tile instead of the piece
 func _on_label_mouse_entered(TargetPiece):
 	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
 	pass
@@ -34,7 +33,7 @@ func _on_label_mouse_exited(TargetPiece):
 	TargetPiece.add_theme_color_override("font_color", old_color)
 	pass
 
-#when we touch the piece
+#when we touch the piece (the piece is the actual label it should be the grid child instead) <-- change this to be the tile instead of the piece
 func _on_label_gui_input(event,TargetPiece):
 	if event is InputEventMouseButton:
 		if event.pressed:
