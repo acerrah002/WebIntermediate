@@ -57,17 +57,17 @@ func _on_square_gui_input(event, TargetSquare):
 				print("Choose again this tile is the original")
 				return
 				
-			# Check if target square has an enemy piece to eat
+			# Check if target square has a peice on it
 			if TargetSquare.get_child_count() > 0:
 				var enemy_piece = TargetSquare.get_child(0)
-				
 				# Print out what is being eaten cleanly using metadata
 				var enemy_type = enemy_piece.get_meta("piece_type")
 				var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
 				
-				# Remove and delete the enemy piece from the board
+				#if its the same colour you need to choose a different tile
 				if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
 					print("same colour")
+				# Remove and delete the enemy piece from the board	
 				else:
 					print("EATING: ", enemy_team, " ", enemy_type)
 					TargetSquare.remove_child(enemy_piece)
@@ -77,6 +77,7 @@ func _on_square_gui_input(event, TargetSquare):
 					TargetSquare.add_child(currently_selected_piece)
 					# Reset selection state for the next turn
 					currently_selected_piece = null
+			#this is what allows you to move to empty tiles
 			else:
 				print("Moving Piece to this tile")
 				currently_selected_piece.get_parent().remove_child(currently_selected_piece)
