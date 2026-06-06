@@ -12,8 +12,12 @@ var currently_selected_piece = null
 #we added touch move
 #----------------------------
 #need to add logic for piece type
+#first we need to make a line of code to tell us what current piece has been selected
 
+#tile piece location
+func PawnLogic()
 
+#what does this do?
 func PlacePiece(new_colorrect, PieceType, PieceColour):
 	var new_label = Label.new()
 	new_label.text = PieceType
@@ -46,7 +50,6 @@ func _on_tile_mouse_exited(TargetSquare):
 			piece.add_theme_color_override("font_color", old_color)
 
 # Unified input logic: handles both selection, moving, and capturing
-#This is what selects the piece
 func _on_square_gui_input(event, TargetSquare):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		
@@ -55,6 +58,7 @@ func _on_square_gui_input(event, TargetSquare):
 		if currently_selected_piece == null:
 			if TargetSquare.get_child_count() > 0:
 				currently_selected_piece = TargetSquare.get_child(0)
+				#selected piece
 				print("Selected piece: ", currently_selected_piece.get_meta("piece_type"))
 		
 		# CASE 2: A piece is already selected -> Try to move or capture
