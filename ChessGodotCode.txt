@@ -15,7 +15,53 @@ var currently_selected_piece = null
 #first we need to make a line of code to tell us what current piece has been selected
 
 #tile piece location
-func PawnLogic()
+#func PawnLogic()
+
+func print_grid_to_terminal():
+	print("\n--- Current Board State ---")
+	print("    0      1      2      3      4      5      6      7")
+	print("    -------------------------------------------------")
+	
+	# Start the very first row header
+	var board_string = "0 | "
+	
+	# Loop through all 64 spaces on your 8x8 board
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		
+		# Format the iterator 'i' to always look like two digits (e.g., 05, 12, 63)
+		var i_str = str(i)
+		if i < 10:
+			i_str = "0" + i_str
+			
+		# Check if the tile has a piece (Label) on it
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			var piece_char = piece.get_meta("piece_type")
+			var team = piece.get_meta("piece_color_index")
+			
+			# White pieces upper-case, Black pieces lower-case + iterator
+			if team == 0:
+				board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
+			else:
+				board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
+		else:
+			# Empty square marker + iterator
+			board_string += "[.:" + i_str + "] "
+		
+		# Handle the end of a row
+		if (i + 1) % 8 == 0:
+			board_string += "\n"
+			
+			# Calculate the next row number index
+			var next_row_index = (i + 1) / 8
+			if next_row_index < 8:
+				board_string += str(next_row_index) + " | "
+
+	print(board_string)
+	print("---------------------------")
+
+
 
 #what does this do?
 func PlacePiece(new_colorrect, PieceType, PieceColour):
@@ -136,6 +182,6 @@ func _ready() -> void:
 			# Connect click signals to the tile
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
 			GridStuff.add_child(new_colorrect)
-
+	print_grid_to_terminal() 
 func _process(delta: float) -> void:
 	pass
