@@ -17,6 +17,7 @@ var currently_selected_piece = null
 #tile piece location
 #func PawnLogic()
 
+#this shows the grid
 func print_grid_to_terminal():
 	print("\n--- Current Board State ---")
 	print("    0      1      2      3      4      5      6      7")
@@ -182,6 +183,7 @@ func _ready() -> void:
 			# Connect click signals to the tile
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
 			GridStuff.add_child(new_colorrect)
+	#shows grid
 	print_grid_to_terminal() 
 func _process(delta: float) -> void:
 	pass
