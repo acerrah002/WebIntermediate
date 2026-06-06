@@ -64,12 +64,12 @@ func _on_square_gui_input(event, TargetSquare):
 				# Print out what is being eaten cleanly using metadata
 				var enemy_type = enemy_piece.get_meta("piece_type")
 				var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
-				print("EATING: ", enemy_team, " ", enemy_type)
 				
 				# Remove and delete the enemy piece from the board
 				if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
 					print("same colour")
-
+				else:
+					print("EATING: ", enemy_team, " ", enemy_type)
 					TargetSquare.remove_child(enemy_piece)
 					enemy_piece.queue_free()
 					# Perform the move
