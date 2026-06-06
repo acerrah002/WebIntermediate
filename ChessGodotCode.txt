@@ -38,10 +38,12 @@ func _on_tile_mouse_exited(TargetSquare):
 			piece.add_theme_color_override("font_color", old_color)
 
 # Unified input logic: handles both selection, moving, and capturing
+#This is what selects the piece
 func _on_square_gui_input(event, TargetSquare):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		
 		# CASE 1: No piece is currently selected -> Pick one up
+		#make it so the slected piece is also highlighted yellow
 		if currently_selected_piece == null:
 			if TargetSquare.get_child_count() > 0:
 				currently_selected_piece = TargetSquare.get_child(0)
@@ -49,10 +51,10 @@ func _on_square_gui_input(event, TargetSquare):
 		
 		# CASE 2: A piece is already selected -> Try to move or capture
 		else:
-			# Deselect if clicking the exact same square the piece is currently on
+			# Touch move no deselect
 			if currently_selected_piece.get_parent() == TargetSquare:
-				currently_selected_piece = null
-				print("Deselected piece")
+				#currently_selected_piece = null
+				print("Choose again this tile is the original")
 				return
 				
 			# Check if target square has an enemy piece to eat
@@ -65,15 +67,16 @@ func _on_square_gui_input(event, TargetSquare):
 				print("EATING: ", enemy_team, " ", enemy_type)
 				
 				# Remove and delete the enemy piece from the board
-				TargetSquare.remove_child(enemy_piece)
-				enemy_piece.queue_free()
-
-			# Perform the move
-			currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-			TargetSquare.add_child(currently_selected_piece)
-			
-			# Reset selection state for the next turn
-			currently_selected_piece = null
+				if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
+					print("same colour")
+				else:
+					TargetSquare.remove_child(enemy_piece)
+					enemy_piece.queue_free()
+					# Perform the move
+					currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+					TargetSquare.add_child(currently_selected_piece)
+					# Reset selection state for the next turn
+					currently_selected_piece = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
