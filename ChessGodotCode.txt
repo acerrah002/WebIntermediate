@@ -65,7 +65,7 @@ func _on_square_gui_input(event, TargetSquare):
 				var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
 				
 				#if its the same colour you need to choose a different tile
-				if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
+				if currently_selected_piece.get_meta("piece_color_index") == enemy_piece.get_meta("piece_color_index"):
 					print("same colour")
 				# Remove and delete the enemy piece from the board	
 				else:
