@@ -69,7 +69,7 @@ func _on_square_gui_input(event, TargetSquare):
 				# Remove and delete the enemy piece from the board
 				if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
 					print("same colour")
-				else:
+
 					TargetSquare.remove_child(enemy_piece)
 					enemy_piece.queue_free()
 					# Perform the move
@@ -77,7 +77,13 @@ func _on_square_gui_input(event, TargetSquare):
 					TargetSquare.add_child(currently_selected_piece)
 					# Reset selection state for the next turn
 					currently_selected_piece = null
-
+			else:
+				print("Moving Piece to this tile")
+				currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+				TargetSquare.add_child(currently_selected_piece)
+				currently_selected_piece = null
+				
+				
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	GridStuff.columns = 8
