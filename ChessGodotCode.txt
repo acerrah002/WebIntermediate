@@ -6,65 +6,6 @@ extends Control
 var ColourOfPieces = ["WHITE","BLACK"]
 var currently_selected_piece = null
 
-#We added moving
-#Highlighting when hovering
-#We added freiendly fire
-#we added touch move
-#----------------------------
-#need to add logic for piece type
-#first we need to make a line of code to tell us what current piece has been selected
-
-#tile piece location
-#func PawnLogic()
-
-#this shows the grid
-func print_grid_to_terminal():
-	print("\n--- Current Board State ---")
-	print("    0      1      2      3      4      5      6      7")
-	print("    -------------------------------------------------")
-	
-	# Start the very first row header
-	var board_string = "0 | "
-	
-	# Loop through all 64 spaces on your 8x8 board
-	for i in range(64):
-		var tile = GridStuff.get_child(i)
-		
-		# Format the iterator 'i' to always look like two digits (e.g., 05, 12, 63)
-		var i_str = str(i)
-		if i < 10:
-			i_str = "0" + i_str
-			
-		# Check if the tile has a piece (Label) on it
-		if tile.get_child_count() > 0:
-			var piece = tile.get_child(0)
-			var piece_char = piece.get_meta("piece_type")
-			var team = piece.get_meta("piece_color_index")
-			
-			# White pieces upper-case, Black pieces lower-case + iterator
-			if team == 0:
-				board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
-			else:
-				board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
-		else:
-			# Empty square marker + iterator
-			board_string += "[.:" + i_str + "] "
-		
-		# Handle the end of a row
-		if (i + 1) % 8 == 0:
-			board_string += "\n"
-			
-			# Calculate the next row number index
-			var next_row_index = (i + 1) / 8
-			if next_row_index < 8:
-				board_string += str(next_row_index) + " | "
-
-	print(board_string)
-	print("---------------------------")
-
-
-
-#what does this do?
 func PlacePiece(new_colorrect, PieceType, PieceColour):
 	var new_label = Label.new()
 	new_label.text = PieceType
@@ -81,22 +22,147 @@ func PlacePiece(new_colorrect, PieceType, PieceColour):
 	# Storing numeric team color (0 for White, 1 for Black) to help with future rules
 	new_label.set_meta("piece_color_index", PieceColour)
 
+func CheckMove(current_pos, target_pos):
+	var piece_type = currently_selected_piece.get_meta("piece_type")
+	if piece_type == "P":
+		return PawnLogic(current_pos, target_pos)
+	elif piece_type == "R":
+		pass
+	elif piece_type == "B":
+		pass
+	elif piece_type == "N":
+		pass
+	elif piece_type == "Q":
+		pass
+	elif piece_type == "K":
+		pass
+	
+#func print_grid_to_terminal():
+	#print("\n--- Current Board State ---")
+	#print("    0      1      2      3      4      5      6      7")
+	#print("    -------------------------------------------------")
+	#
+	## Start the very first row header
+	#var board_string = "0 | "
+	#
+	## Loop through all 64 spaces on your 8x8 board
+	#for i in range(64):
+		#var tile = GridStuff.get_child(i)
+		#
+		## Format the iterator 'i' to always look like two digits (e.g., 05, 12, 63)
+		#var i_str = str(i)
+		#if i < 10:
+			#i_str = "0" + i_str
+			#
+		## Check if the tile has a piece (Label) on it
+		#if tile.get_child_count() > 0:
+			#var piece = tile.get_child(0)
+			#var piece_char = piece.get_meta("piece_type")
+			#var team = piece.get_meta("piece_color_index")
+			#
+			## White pieces upper-case, Black pieces lower-case + iterator
+			#if team == 0:
+				#board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
+			#else:
+				#board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
+		#else:
+			## Empty square marker + iterator
+			#board_string += "[.:" + i_str + "] "
+		#
+		## Handle the end of a row
+		#if (i + 1) % 8 == 0:
+			#board_string += "\n"
+			#
+			## Calculate the next row number index
+			#var next_row_index = (i + 1) / 8
+			#if next_row_index < 8:
+				#board_string += str(next_row_index) + " | "
+#
+	#print(board_string)
+	#print("---------------------------")
+		#
+
+func IsOccupied(pos):
+	var tile = GridStuff.get_child(pos)
+	var piece = tile.get_child(0)
+	if piece:
+		return true
+	else:
+		return false
+func GetTilePieceColor(pos):
+	var tile = GridStuff.get_child(pos)
+	var piece = tile.get_child(0)
+	return piece.get_meta("piece_color_index")
+	
+func PawnLogic(current_pos, target_pos):
+	#check piece color
+	if currently_selected_piece.get_meta("piece_color_index") == 0:
+		var forward1 = GridStuff.get_child(current_pos-(8*1))
+		var forward2 = GridStuff.get_child(current_pos-(8*2))
+		var forward_left = GridStuff.get_child(current_pos-(8*1)-1)
+		var forward_right = GridStuff.get_child(current_pos-(8*1)+1)
+		
+		#check forward1
+		if target_pos == current_pos - (8*1):
+			#check if piece is occupied 
+			if IsOccupied(current_pos - (8*1)):
+				return false
+				
+			return true
+		#check forward2 and is on starting rank
+		if target_pos == current_pos - (8*2) and current_pos >= (8*6):
+			#check if position behind is occupied
+			if IsOccupied(current_pos - (8*1)):
+				return false
+			
+			if IsOccupied(current_pos - (8*2)):
+				return false
+			
+			return true
+		
+		#check forward_left and that it isn't on the far left
+		if target_pos == current_pos-(8*1)-1 and current_pos%8 != 0:
+			if not IsOccupied(current_pos-(8*1)-1):
+				return false
+			
+			var col = GetTilePieceColor(current_pos-(8*1)-1)
+			if col == 0:
+				return false
+				
+			return true
+			
+		#check forward_right and that it isn't on the far right
+		if target_pos == current_pos-(8*1)+1 and current_pos%8 != 8:
+			if not IsOccupied(current_pos-(8*1)+1):
+				return false
+			
+			var col = GetTilePieceColor(current_pos-(8*1)+1)
+			if col == 0:
+				return false
+				
+			return true
+		
+		
+		return false
+	
+
 # Highlights the Label yellow when hovering over its parent tile
 func _on_tile_mouse_entered(TargetSquare):
 	if TargetSquare.get_child_count() > 0:
 		var piece = TargetSquare.get_child(0)
-		if piece is Label:
+		if piece is Label and currently_selected_piece == null:
 			piece.add_theme_color_override("font_color", Color.YELLOW)
 
 # Restores the original Label color when leaving the tile
 func _on_tile_mouse_exited(TargetSquare):
 	if TargetSquare.get_child_count() > 0:
 		var piece = TargetSquare.get_child(0)
-		if piece is Label and piece.has_meta("original_color"):
+		if piece is Label and piece.has_meta("original_color") and currently_selected_piece == null:
 			var old_color = piece.get_meta("original_color")
 			piece.add_theme_color_override("font_color", old_color)
 
 # Unified input logic: handles both selection, moving, and capturing
+#This is what selects the piece
 func _on_square_gui_input(event, TargetSquare):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		
@@ -105,43 +171,48 @@ func _on_square_gui_input(event, TargetSquare):
 		if currently_selected_piece == null:
 			if TargetSquare.get_child_count() > 0:
 				currently_selected_piece = TargetSquare.get_child(0)
-				#selected piece
 				print("Selected piece: ", currently_selected_piece.get_meta("piece_type"))
 		
 		# CASE 2: A piece is already selected -> Try to move or capture
 		else:
 			# Touch move no deselect
 			if currently_selected_piece.get_parent() == TargetSquare:
-				#currently_selected_piece = null
-				print("Choose again this tile is the original")
+				var old_color = currently_selected_piece.get_meta("original_color")
+				currently_selected_piece.add_theme_color_override("font_color", old_color)
+				currently_selected_piece = null
 				return
 				
-			# Check if target square has a peice on it
-			if TargetSquare.get_child_count() > 0:
-				var enemy_piece = TargetSquare.get_child(0)
-				# Print out what is being eaten cleanly using metadata
-				var enemy_type = enemy_piece.get_meta("piece_type")
-				var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
+			var target_pos = TargetSquare.get_index()
+			var current_pos = currently_selected_piece.get_parent().get_index()
+			
+			print(CheckMove(current_pos, target_pos))
 				
-				#if its the same colour you need to choose a different tile
-				if currently_selected_piece.get_meta("piece_color_index") == enemy_piece.get_meta("piece_color_index"):
-					print("same colour")
-				# Remove and delete the enemy piece from the board	
-				else:
-					print("EATING: ", enemy_team, " ", enemy_type)
-					TargetSquare.remove_child(enemy_piece)
-					enemy_piece.queue_free()
-					# Perform the move
-					currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-					TargetSquare.add_child(currently_selected_piece)
-					# Reset selection state for the next turn
-					currently_selected_piece = null
-			#this is what allows you to move to empty tiles
-			else:
-				print("Moving Piece to this tile")
-				currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-				TargetSquare.add_child(currently_selected_piece)
-				currently_selected_piece = null
+				
+			## Check if target square has an enemy piece to eat
+			#if TargetSquare.get_child_count() > 0:
+				#var enemy_piece = TargetSquare.get_child(0)
+				#
+				## Print out what is being eaten cleanly using metadata
+				#var enemy_type = enemy_piece.get_meta("piece_type")
+				#var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
+				#
+				## Remove and delete the enemy piece from the board
+				#if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
+					#print("same colour")
+				#else:
+					#print("EATING: ", enemy_team, " ", enemy_type)
+					#TargetSquare.remove_child(enemy_piece)
+					#enemy_piece.queue_free()
+					## Perform the move
+					#currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+					#TargetSquare.add_child(currently_selected_piece)
+					## Reset selection state for the next turn
+					#currently_selected_piece = null
+			#else:
+				#print("Moving Piece to this tile")
+				#currently_selected_piece.get_parent().remove_child(currently_selected_piece)
+				#TargetSquare.add_child(currently_selected_piece)
+				#currently_selected_piece = null
 				
 				
 # Called when the node enters the scene tree for the first time.
@@ -183,7 +254,8 @@ func _ready() -> void:
 			# Connect click signals to the tile
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
 			GridStuff.add_child(new_colorrect)
-	#shows grid
-	print_grid_to_terminal() 
+
+
 func _process(delta: float) -> void:
+	
 	pass
