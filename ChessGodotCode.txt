@@ -96,7 +96,20 @@ func GetTilePieceColor(pos):
 	return piece.get_meta("piece_color_index")
 
 func QueenLogic(current_pos, target_pos):
-	pass
+	#check forward line one by one to stop the queen from teleporting
+	#lets figure out the direction
+	#this is for checking forward and backwards
+	if target_pos%8 == current_pos%8:
+		print("This is forward or backwards")
+	#this is for diagonal
+	if target_pos%7 == current_pos%7:
+		print("This is going diagnonal right")
+	if target_pos%9 == current_pos%9:
+		print("This is going diagnonal left")
+	if target_pos%7 == current_pos%7:
+		print("This is going diagnonal right")
+	if target_pos%9 == current_pos%9:
+		print("This is going diagnonal left")
 
 #validiates pawn logic
 func PawnLogic(current_pos, target_pos):
