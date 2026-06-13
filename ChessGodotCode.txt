@@ -187,6 +187,8 @@ func _on_square_gui_input(event, TargetSquare):
 			
 			print(CheckMove(current_pos, target_pos))
 			if CheckMove(current_pos, target_pos):
+				#This is how we move the pieces first we remove the current piece from its parent
+				#second we add the current piece as a child to the target position
 				currently_selected_piece.get_parent().remove_child(currently_selected_piece)
 				TargetSquare.add_child(currently_selected_piece)
 			## Check if target square has an enemy piece to eat
