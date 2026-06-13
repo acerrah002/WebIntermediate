@@ -214,11 +214,33 @@ func _on_tile_mouse_exited(TargetSquare):
 			var old_color = piece.get_meta("original_color")
 			piece.add_theme_color_override("font_color", old_color)
 
-func movepiece(selectedpiece,targetsquare):
+func moveoreatpiece(selectedpiece,targetsquare):
 	#This is how we move the pieces first we remove the current piece from its parent
 	#second we add the current piece as a child to the target position
-	selectedpiece.get_parent().remove_child(selectedpiece)
-	targetsquare.add_child(selectedpiece)
+	## Check if target square has an enemy piece to eat
+	if targetsquare.get_child_count() > 0:
+		var enemy_piece = targetsquare.get_child(0)
+		## Print out what is being eaten cleanly using metadata
+		var enemy_type = enemy_piece.get_meta("piece_type")
+		var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
+		#
+		## Remove and delete the enemy piece from the board
+		if enemy_piece.get_meta("piece_color_index") == selectedpiece.get_meta("piece_color_index"):
+			print("same colour")
+		else:
+			print("EATING: ", enemy_team, " ", enemy_type)
+			targetsquare.remove_child(enemy_piece)
+			enemy_piece.queue_free()
+			## Perform the move
+			selectedpiece.get_parent().remove_child(selectedpiece)
+			targetsquare.add_child(selectedpiece)
+			## Reset selection state for the next turn
+			selectedpiece = null
+	else:
+		print("Moving Piece to this tile")
+		selectedpiece.get_parent().remove_child(selectedpiece)
+		targetsquare.add_child(selectedpiece)
+		selectedpiece = null
 
 # Unified input logic: handles both selection, moving, and capturing
 #This is what selects the piece
@@ -246,7 +268,7 @@ func _on_square_gui_input(event, TargetSquare):
 			
 			print(CheckMove(current_pos, target_pos))
 			if CheckMove(current_pos, target_pos):
-				movepiece(currently_selected_piece, TargetSquare)
+				moveoreatpiece(currently_selected_piece, TargetSquare)
 				currently_selected_piece = null
 			## Check if target square has an enemy piece to eat
 			#if TargetSquare.get_child_count() > 0:
