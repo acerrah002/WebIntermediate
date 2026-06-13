@@ -161,6 +161,12 @@ func _on_tile_mouse_exited(TargetSquare):
 			var old_color = piece.get_meta("original_color")
 			piece.add_theme_color_override("font_color", old_color)
 
+func movepiece(selectedpiece,targetsquare):
+	#This is how we move the pieces first we remove the current piece from its parent
+	#second we add the current piece as a child to the target position
+	selectedpiece.get_parent().remove_child(selectedpiece)
+	targetsquare.add_child(selectedpiece)
+
 # Unified input logic: handles both selection, moving, and capturing
 #This is what selects the piece
 func _on_square_gui_input(event, TargetSquare):
@@ -187,10 +193,7 @@ func _on_square_gui_input(event, TargetSquare):
 			
 			print(CheckMove(current_pos, target_pos))
 			if CheckMove(current_pos, target_pos):
-				#This is how we move the pieces first we remove the current piece from its parent
-				#second we add the current piece as a child to the target position
-				currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-				TargetSquare.add_child(currently_selected_piece)
+				movepiece(currently_selected_piece, TargetSquare)
 			## Check if target square has an enemy piece to eat
 			#if TargetSquare.get_child_count() > 0:
 				#var enemy_piece = TargetSquare.get_child(0)
