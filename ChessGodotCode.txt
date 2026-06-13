@@ -25,6 +25,7 @@ func PlacePiece(new_colorrect, PieceType, PieceColour):
 func CheckMove(current_pos, target_pos):
 	var piece_type = currently_selected_piece.get_meta("piece_type")
 	if piece_type == "P":
+		#this is what returns the valid movement
 		return PawnLogic(current_pos, target_pos)
 	elif piece_type == "R":
 		pass
@@ -33,7 +34,7 @@ func CheckMove(current_pos, target_pos):
 	elif piece_type == "N":
 		pass
 	elif piece_type == "Q":
-		pass
+		return QueenLogic(current_pos, target_pos)
 	elif piece_type == "K":
 		pass
 	
@@ -93,7 +94,11 @@ func GetTilePieceColor(pos):
 	var tile = GridStuff.get_child(pos)
 	var piece = tile.get_child(0)
 	return piece.get_meta("piece_color_index")
-	
+
+func QueenLogic(current_pos, target_pos):
+	pass
+
+#validiates pawn logic
 func PawnLogic(current_pos, target_pos):
 	#check piece color
 	if currently_selected_piece.get_meta("piece_color_index") == 0:
@@ -214,6 +219,7 @@ func _on_tile_mouse_exited(TargetSquare):
 			var old_color = piece.get_meta("original_color")
 			piece.add_theme_color_override("font_color", old_color)
 
+#this only works when it is confirmed that the move is valid from check move
 func moveoreatpiece(selectedpiece,targetsquare):
 	#This is how we move the pieces first we remove the current piece from its parent
 	#second we add the current piece as a child to the target position
@@ -270,33 +276,7 @@ func _on_square_gui_input(event, TargetSquare):
 			if CheckMove(current_pos, target_pos):
 				moveoreatpiece(currently_selected_piece, TargetSquare)
 				currently_selected_piece = null
-			## Check if target square has an enemy piece to eat
-			#if TargetSquare.get_child_count() > 0:
-				#var enemy_piece = TargetSquare.get_child(0)
-				#
-				## Print out what is being eaten cleanly using metadata
-				#var enemy_type = enemy_piece.get_meta("piece_type")
-				#var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
-				#
-				## Remove and delete the enemy piece from the board
-				#if enemy_piece.get_meta("piece_color_index") == currently_selected_piece.get_meta("piece_color_index"):
-					#print("same colour")
-				#else:
-					#print("EATING: ", enemy_team, " ", enemy_type)
-					#TargetSquare.remove_child(enemy_piece)
-					#enemy_piece.queue_free()
-					## Perform the move
-					#currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-					#TargetSquare.add_child(currently_selected_piece)
-					## Reset selection state for the next turn
-					#currently_selected_piece = null
-			#else:
-				#print("Moving Piece to this tile")
-				#currently_selected_piece.get_parent().remove_child(currently_selected_piece)
-				#TargetSquare.add_child(currently_selected_piece)
-				#currently_selected_piece = null
-				
-				
+			
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	GridStuff.columns = 8
@@ -317,8 +297,8 @@ func _ready() -> void:
 			# Spawning Logic
 			if (i == 0 and t == 0) or (i == 0 and t == 7): PlacePiece(new_colorrect,"R",1)
 			if (i == 7 and t == 0) or (i == 7 and t == 7): PlacePiece(new_colorrect,"R",0)
-			if (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect,"H",1)
-			if (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect,"H",0)
+			if (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect,"N",1)
+			if (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect,"N",0)
 			if (i == 0 and t == 2) or (i == 0 and t == 5): PlacePiece(new_colorrect,"B",1)
 			if (i == 7 and t == 2) or (i == 7 and t == 5): PlacePiece(new_colorrect,"B",0)
 			if (i == 0 and t == 3): PlacePiece(new_colorrect,"Q",1)
