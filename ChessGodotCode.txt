@@ -32,7 +32,7 @@ func CheckMove(current_pos, target_pos):
 	elif piece_type == "B":
 		pass
 	elif piece_type == "N":
-		pass
+		return return KnightLogic(current_pos, target_pos)
 	elif piece_type == "Q":
 		return QueenLogic(current_pos, target_pos)
 	elif piece_type == "K":
@@ -110,6 +110,49 @@ func QueenLogic(current_pos, target_pos):
 		print("This is going diagnonal right")
 	if target_pos%9 == current_pos%9:
 		print("This is going diagnonal left")
+func KnightLogic(current_pos, target_pos):
+	#piece color
+	if currently_selected_piece.get_meta("piece_color_index") == 0:
+		#made to go in the L shape up 2, left/right 1
+		if target_pos == current_pos - 17 and current_pos % 8 != 0:
+			pass
+		elif target_pos == current_pos - 15 and current_pos % 8 != 7:
+			pass
+
+	# made to go in the L shape down 2, left/right 1 
+		elif target_pos == current_pos + 15 and current_pos % 8 != 0:
+			pass
+		elif target_pos == current_pos + 17 and current_pos % 8 != 7:
+			pass
+
+	# made to go in the L shape up 1, left/right 2
+		elif target_pos == current_pos - 10 and current_pos % 8 > 1:
+			pass
+		elif target_pos == current_pos - 6 and current_pos % 8 < 6:
+			pass
+
+	# made to go in the L shape down 1, left/right 2
+		elif target_pos == current_pos + 6 and current_pos % 8 > 1:
+			pass
+		elif target_pos == current_pos + 10 and current_pos % 8 < 6:
+			pass
+			
+		else:
+			return false
+
+		# if you can move there
+		if IsOccupied(target_pos):
+			var col = GetTilePieceColor(target_pos)
+
+			# your piece
+			if col == currently_selected_piece.get_meta("piece_color_index"):
+				return false
+			# opponent piece
+			return true
+		# empty
+		return true
+	return false
+
 
 #validiates pawn logic
 func PawnLogic(current_pos, target_pos):
