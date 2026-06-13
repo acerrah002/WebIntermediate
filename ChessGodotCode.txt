@@ -32,7 +32,7 @@ func CheckMove(current_pos, target_pos):
 	elif piece_type == "B":
 		pass
 	elif piece_type == "N":
-		return return KnightLogic(current_pos, target_pos)
+		return KnightLogic(current_pos, target_pos)
 	elif piece_type == "Q":
 		return QueenLogic(current_pos, target_pos)
 	elif piece_type == "K":
