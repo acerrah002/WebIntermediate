@@ -28,7 +28,7 @@ func CheckMove(current_pos, target_pos):
 		#this is what returns the valid movement
 		return PawnLogic(current_pos, target_pos)
 	elif piece_type == "R":
-		pass
+		return RookLogic(current_pos, target_pos)
 	elif piece_type == "B":
 		pass
 	elif piece_type == "N":
@@ -215,7 +215,36 @@ func PawnLogic(current_pos, target_pos):
 			return true
 		return false
 
-	
+func RookLogic(current_pos, target_pos):		
+	#Check up direction
+	for i in range(8):
+		var move_pos = current_pos - 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos < 8*1:
+			break
+			
+	#Check down direction
+	for i in range(8):
+		var move_pos = current_pos + 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos >= 8*7:
+			break	
 
 # Highlights the Label yellow when hovering over its parent tile
 func _on_tile_mouse_entered(TargetSquare):
