@@ -97,53 +97,106 @@ func GetTilePieceColor(pos):
 func PawnLogic(current_pos, target_pos):
 	#check piece color
 	if currently_selected_piece.get_meta("piece_color_index") == 0:
-		var forward1 = GridStuff.get_child(current_pos-(8*1))
-		var forward2 = GridStuff.get_child(current_pos-(8*2))
-		var forward_left = GridStuff.get_child(current_pos-(8*1)-1)
-		var forward_right = GridStuff.get_child(current_pos-(8*1)+1)
+		var f1 = -(8*1)
+		var f2 = -(8*2)
+		var fl = -(8*1)-1
+		var fr = -(8*1)+1
+		var forward1 = GridStuff.get_child(current_pos+f1)
+		var forward2 = GridStuff.get_child(current_pos+f2)
+		var forward_left = GridStuff.get_child(current_pos+fl)
+		var forward_right = GridStuff.get_child(current_pos+fr)
 		
 		#check forward1
-		if target_pos == current_pos - (8*1):
+		if target_pos == current_pos + f1:
 			#check if piece is occupied 
-			if IsOccupied(current_pos - (8*1)):
+			if IsOccupied(current_pos + f1):
 				return false
 				
 			return true
 		#check forward2 and is on starting rank
-		if target_pos == current_pos - (8*2) and current_pos >= (8*6):
+		if target_pos == current_pos + f2 and current_pos >= (8*6):
 			#check if position behind is occupied
-			if IsOccupied(current_pos - (8*1)):
+			if IsOccupied(current_pos + f1):
 				return false
 			
-			if IsOccupied(current_pos - (8*2)):
+			if IsOccupied(current_pos + f2):
 				return false
 			
 			return true
 		
 		#check forward_left and that it isn't on the far left
-		if target_pos == current_pos-(8*1)-1 and current_pos%8 != 0:
-			if not IsOccupied(current_pos-(8*1)-1):
+		if target_pos == current_pos+fl and current_pos%8 != 0:
+			if not IsOccupied(current_pos+fl):
 				return false
 			
-			var col = GetTilePieceColor(current_pos-(8*1)-1)
+			var col = GetTilePieceColor(current_pos+fl)
 			if col == 0:
 				return false
 				
 			return true
 			
 		#check forward_right and that it isn't on the far right
-		if target_pos == current_pos-(8*1)+1 and current_pos%8 != 8:
-			if not IsOccupied(current_pos-(8*1)+1):
+		if target_pos == current_pos+fr and current_pos%8 != 8:
+			if not IsOccupied(current_pos+fr):
 				return false
 			
-			var col = GetTilePieceColor(current_pos-(8*1)+1)
+			var col = GetTilePieceColor(current_pos+fr)
 			if col == 0:
 				return false
 				
 			return true
-		
-		
 		return false
+	else:
+		var f1 = (8*1)
+		var f2 = (8*2)
+		var fl = (8*1)-1
+		var fr = (8*1)+1
+		var forward1 = GridStuff.get_child(current_pos+f1)
+		var forward2 = GridStuff.get_child(current_pos+f2)
+		var forward_left = GridStuff.get_child(current_pos+fl)
+		var forward_right = GridStuff.get_child(current_pos+fr)
+		
+		#check forward1
+		if target_pos == current_pos + f1:
+			#check if piece is occupied 
+			if IsOccupied(current_pos + f1):
+				return false
+				
+			return true
+		#check forward2 and is on starting rank
+		if target_pos == current_pos + f2 and current_pos < (8*2):
+			#check if position behind is occupied
+			if IsOccupied(current_pos + f1):
+				return false
+			
+			if IsOccupied(current_pos + f2):
+				return false
+			
+			return true
+		
+		#check forward_left and that it isn't on the far left
+		if target_pos == current_pos + fl and current_pos%8 != 0:
+			if not IsOccupied(current_pos + fl):
+				return false
+			
+			var col = GetTilePieceColor(current_pos + fl)
+			if col == 1:
+				return false
+				
+			return true
+			
+		#check forward_right and that it isn't on the far right
+		if target_pos == current_pos + fr and current_pos%8 != 8:
+			if not IsOccupied(current_pos + fr):
+				return false
+			
+			var col = GetTilePieceColor(current_pos + fr)
+			if col == 1:
+				return false
+				
+			return true
+		return false
+
 	
 
 # Highlights the Label yellow when hovering over its parent tile
