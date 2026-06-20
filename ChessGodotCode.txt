@@ -5,6 +5,7 @@ extends Control
 
 var ColourOfPieces = ["WHITE","BLACK"]
 var currently_selected_piece = null
+var game_over = false
 
 func PlacePiece(new_colorrect, PieceSymbol, PieceType, PieceColour):
 	var new_label = Label.new()
@@ -395,34 +396,33 @@ func _on_tile_mouse_exited(TargetSquare):
 			var old_color = piece.get_meta("original_color")
 			piece.add_theme_color_override("font_color", old_color)
 
-#this only works when it is confirmed that the move is valid from check move
-func moveoreatpiece(selectedpiece,targetsquare):
-	#This is how we move the pieces first we remove the current piece from its parent
-	#second we add the current piece as a child to the target position
-	## Check if target square has an enemy piece to eat
+func moveoreatpiece(selectedpiece, targetsquare):
+	# 1. Handle EATING (if target square has a piece)
 	if targetsquare.get_child_count() > 0:
 		var enemy_piece = targetsquare.get_child(0)
-		## Print out what is being eaten cleanly using metadata
 		var enemy_type = enemy_piece.get_meta("piece_type")
-		var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
-		#
-		## Remove and delete the enemy piece from the board
+		
 		if enemy_piece.get_meta("piece_color_index") == selectedpiece.get_meta("piece_color_index"):
 			print("same colour")
-		else:
-			print("EATING: ", enemy_team, " ", enemy_type)
+			return
+
+		# Handle King capture
+		if enemy_type == "K":
+			var winner = "WHITE" if selectedpiece.get_meta("piece_color_index") == 0 else "BLACK"
 			targetsquare.remove_child(enemy_piece)
 			enemy_piece.queue_free()
-			## Perform the move
 			selectedpiece.get_parent().remove_child(selectedpiece)
 			targetsquare.add_child(selectedpiece)
-			## Reset selection state for the next turn
-			selectedpiece = null
-	else:
-		print("Moving Piece to this tile")
-		selectedpiece.get_parent().remove_child(selectedpiece)
-		targetsquare.add_child(selectedpiece)
-		selectedpiece = null
+			ShowWinner(winner)
+			return
+		
+		# Normal capture
+		targetsquare.remove_child(enemy_piece)
+		enemy_piece.queue_free()
+	
+	# 2. THIS WAS MISSING: Handle moving to an EMPTY square
+	selectedpiece.get_parent().remove_child(selectedpiece)
+	targetsquare.add_child(selectedpiece)
 
 # Unified input logic: handles both selection, moving, and capturing
 #This is what selects the piece
@@ -495,6 +495,40 @@ func _ready() -> void:
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
 			
 			GridStuff.add_child(new_colorrect)
+
+func ShowWinner(winner):
+
+	var canvas = CanvasLayer.new()
+	add_child(canvas)
+
+	# Background panel
+	var panel = Panel.new()
+	panel.size = Vector2(400, 200)
+	panel.position = Vector2(
+		(get_viewport().size.x - panel.size.x) / 2,
+		(get_viewport().size.y - panel.size.y) / 2
+	)
+	canvas.add_child(panel)
+
+	# Winner text
+	var label = Label.new()
+	label.text = winner + " KING WINS!"
+	label.position = Vector2(40, 40)
+	label.size = Vector2(320, 50)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 32)
+	panel.add_child(label)
+
+	# Reset button
+	var button = Button.new()
+	button.text = "Return To Menu"
+	button.size = Vector2(200, 50)
+	button.position = Vector2(100, 120)
+	panel.add_child(button)
+
+	button.pressed.connect(func():
+		get_tree().change_scene_to_file("res://Menu.tscn")
+	)
 
 func _process(delta: float) -> void:
 	
