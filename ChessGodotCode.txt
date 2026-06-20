@@ -38,6 +38,7 @@ func CheckMove(current_pos, target_pos):
 	elif piece_type == "R":
 		return RookLogic(current_pos, target_pos)
 	elif piece_type == "B":
+		return BishopLogic(current_pos, target_pos)
 		pass
 	elif piece_type == "N":
 		return KnightLogic(current_pos, target_pos)
@@ -45,6 +46,7 @@ func CheckMove(current_pos, target_pos):
 	elif piece_type == "Q":
 		return QueenLogic(current_pos, target_pos)
 	elif piece_type == "K":
+		return KingLogic(current_pos, target_pos)
 		pass
 	
 func print_grid_to_terminal():
@@ -317,8 +319,66 @@ func KnightLogic(current_pos, target_pos):
 	return false
 
 func BishopLogic(current_pos, target_pos):
-	pass
+	var diff = target_pos - current_pos
+	var step = 0
 	
+	# Determine if the target is on a valid diagonal
+	# We use the absolute value of the horizontal distance to ensure 
+	# we don't "jump" across the board boundaries (e.g., from col 7 to col 0).
+	var col_diff = abs((target_pos % 8) - (current_pos % 8))
+	var row_diff = abs(int(target_pos / 8) - int(current_pos / 8))
+	
+	# Bishops must move the same number of squares horizontally and vertically
+	if col_diff != row_diff:
+		return false
+	
+	# Set the step based on direction
+	if diff % 9 == 0:
+		step = 9 if diff > 0 else -9
+	elif diff % 7 == 0:
+		step = 7 if diff > 0 else -7
+	else:
+		return false # Not a valid diagonal line
+
+	# Loop through the path to check for collisions
+	var check_pos = current_pos + step
+	while check_pos != target_pos:
+		if IsOccupied(check_pos):
+			return false # Piece in the way!
+		check_pos += step
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+			
+	return true
+
+func KingLogic(current_pos, target_pos):
+	var diff = target_pos - current_pos
+	
+	# Calculate coordinate changes
+	var curr_col = current_pos % 8
+	var curr_row = int(current_pos / 8)
+	var target_col = target_pos % 8
+	var target_row = int(target_pos / 8)
+	
+	# Calculate the absolute difference in rows and columns
+	var row_diff = abs(target_row - curr_row)
+	var col_diff = abs(target_col - curr_col)
+	
+	# The King can move at most 1 square in any direction
+	# row_diff <= 1 and col_diff <= 1 covers all 8 adjacent squares
+	# We exclude the case where the King doesn't move at all (row_diff=0 and col_diff=0)
+	if row_diff > 1 or col_diff > 1 or (row_diff == 0 and col_diff == 0):
+		return false
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+			
+	return true
 
 # Highlights the Label yellow when hovering over its parent tile
 func _on_tile_mouse_entered(TargetSquare):
