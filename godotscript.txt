@@ -2,105 +2,845 @@ extends Control
 
 @onready var GridStuff = $GridContainer
 @onready var TurnColour = $TurnColour
+@onready var CheckIndicator = $CheckIndicator  # Optional: Add a Label node to show "CHECK!"
 
 var ColourOfPieces = ["WHITE","BLACK"]
-var currenty_selected_piece = null
+var currently_selected_piece = null
+var game_over = false
+var turn = 0
 
-func PlacePiece(new_colorrect,PieceType,PieceColour):
+func PlacePiece(new_colorrect, PieceSymbol, PieceType, PieceColour):
 	var new_label = Label.new()
-	new_label.text = PieceType
+	new_label.text = PieceSymbol 
+	
+	# --- ADD THIS TO CHANGE FONT SIZE ---
+	# Adjust 30 to whatever pixel size you need
+	new_label.add_theme_font_size_override("font_size", 30) 
+	
+	# Center the text in the square (optional, but highly recommended)
+	new_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	new_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	new_label.custom_minimum_size = new_colorrect.custom_minimum_size
+	# ------------------------------------
+	
 	new_colorrect.add_child(new_label)
-	new_label.mouse_filter=Control.MOUSE_FILTER_STOP
-	#signals for highlighting
-	new_label.mouse_entered.connect(_on_label_mouse_entered.bind(new_label))
-	new_label.mouse_exited.connect(_on_label_mouse_exited.bind(new_label))
-	#signal for moving it
-	new_label.gui_input.connect(_on_label_gui_input.bind(new_label))
-	#changes the colour
+	
+	new_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
 	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
 	new_label.add_theme_color_override("font_color", chosen_color)
 	new_label.set_meta("original_color", chosen_color)
-	pass
+	new_label.set_meta("piece_type", PieceType) 
+	new_label.set_meta("piece_color_index", PieceColour)
 
-
+func CheckMove(current_pos, target_pos):
+	var piece_type = currently_selected_piece.get_meta("piece_type")
+	var piece_color = currently_selected_piece.get_meta("piece_color_index")
 	
-func _on_label_mouse_entered(TargetPiece):
-	TargetPiece.add_theme_color_override("font_color", Color.YELLOW)
-	pass
+	#if it isn't the right color, deny move
+	if piece_color != turn%2:
+		return false
 	
-func _on_label_mouse_exited(TargetPiece):
-	var old_color = TargetPiece.get_meta("original_color")
-	TargetPiece.add_theme_color_override("font_color", old_color)
-	pass
+	# For king moves, also check if the target square is attacked
+	if piece_type == "K":
+		# Check if the square is under attack by any enemy piece
+		if IsSquareAttacked(target_pos, piece_color):
+			return false
+	
+	# First check if the move is valid for the piece type
+	var is_valid_move = false
+	if piece_type == "P":
+		is_valid_move = PawnLogic(current_pos, target_pos)
+	elif piece_type == "R":
+		is_valid_move = RookLogic(current_pos, target_pos)
+	elif piece_type == "B":
+		is_valid_move = BishopLogic(current_pos, target_pos)
+	elif piece_type == "N":
+		is_valid_move = KnightLogic(current_pos, target_pos)
+	elif piece_type == "Q":
+		is_valid_move = QueenLogic(current_pos, target_pos)
+	elif piece_type == "K":
+		is_valid_move = KingLogic(current_pos, target_pos)
+	else:
+		return false
+	
+	# If the move isn't valid for the piece, return false
+	if not is_valid_move:
+		return false
+	
+	# Simulate the move and check if our king would be in check
+	return not WouldKingBeInCheck(current_pos, target_pos, piece_color)
 
-#when we touch the piece
-func _on_label_gui_input(event,TargetPiece):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			if event.button_index == MOUSE_BUTTON_LEFT:
-				print("Clicked to move")
-				currenty_selected_piece = TargetPiece
-			pass
+# Checks if a specific square is attacked by any enemy piece
+func IsSquareAttacked(square_pos, defending_color):
+	var enemy_color = 1 if defending_color == 0 else 0
+	
+	# Check all enemy pieces to see if any can attack this square
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			if piece.get_meta("piece_color_index") == enemy_color:
+				var piece_type = piece.get_meta("piece_type")
+				var can_attack = false
+				
+				match piece_type:
+					"P":
+						# For pawns, check if they can attack this square (not move to it)
+						can_attack = CanPawnAttack(i, square_pos, enemy_color)
+					"R":
+						can_attack = CanRookCapture(i, square_pos)
+					"B":
+						can_attack = CanBishopCapture(i, square_pos)
+					"N":
+						can_attack = CanKnightCapture(i, square_pos)
+					"Q":
+						can_attack = CanQueenCapture(i, square_pos)
+					"K":
+						# Kings can attack adjacent squares but can't move next to each other
+						var col_diff = abs((i % 8) - (square_pos % 8))
+						var row_diff = abs(int(i / 8) - int(square_pos / 8))
+						can_attack = col_diff <= 1 and row_diff <= 1 and (col_diff > 0 or row_diff > 0)
+				
+				if can_attack:
+					return true
+	
+	return false
+
+# New function for pawn attacks (different from pawn moves)
+func CanPawnAttack(pawn_pos, target_pos, pawn_color):
+	var diff = target_pos - pawn_pos
+	var col = pawn_pos % 8
+	
+	# White pawns (color 0) attack upward (negative direction)
+	if pawn_color == 0:
+		# Attack to the upper-left (diff = -9) or upper-right (diff = -7)
+		if diff == -9 and col > 0:
+			return true
+		if diff == -7 and col < 7:
+			return true
+	# Black pawns (color 1) attack downward (positive direction)
+	else:
+		# Attack to the lower-left (diff = 7) or lower-right (diff = 9)
+		if diff == 7 and col > 0:
+			return true
+		if diff == 9 and col < 7:
+			return true
+	
+	return false
+
+# Simulates a move and checks if the moving player's king would be in check
+func WouldKingBeInCheck(from_pos, to_pos, moving_color):
+	# Save the current state
+	var moving_piece = GridStuff.get_child(from_pos).get_child(0)
+	var captured_piece = null
+	if GridStuff.get_child(to_pos).get_child_count() > 0:
+		captured_piece = GridStuff.get_child(to_pos).get_child(0)
+	
+	# Temporarily make the move
+	GridStuff.get_child(from_pos).remove_child(moving_piece)
+	if captured_piece:
+		GridStuff.get_child(to_pos).remove_child(captured_piece)
+	GridStuff.get_child(to_pos).add_child(moving_piece)
+	
+	# Check if our king is in check
+	var king_in_check = IsKingInCheck(moving_color)
+	
+	# Undo the move
+	GridStuff.get_child(to_pos).remove_child(moving_piece)
+	if captured_piece:
+		GridStuff.get_child(to_pos).add_child(captured_piece)
+	GridStuff.get_child(from_pos).add_child(moving_piece)
+	
+	return king_in_check
+
+# Finds the king's position for the given color
+func FindKing(color_index):
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			if piece.get_meta("piece_type") == "K" and piece.get_meta("piece_color_index") == color_index:
+				return i
+	return -1
+
+# Checks if the king of the given color is currently in check
+func IsKingInCheck(color_index):
+	var king_pos = FindKing(color_index)
+	if king_pos == -1:
+		return false
+	
+	# Use IsSquareAttacked to check if the king's position is under attack
+	return IsSquareAttacked(king_pos, color_index)
+
+# Check if a piece can capture the king (without piece-specific rules like pawn forward moves)
+func CanPawnCapture(piece_pos, king_pos, piece_color):
+	return CanPawnAttack(piece_pos, king_pos, piece_color)
+
+func CanRookCapture(piece_pos, king_pos):
+	# We need to temporarily set the piece as selected for RookLogic to work
+	var temp_current = currently_selected_piece
+	var piece = GridStuff.get_child(piece_pos).get_child(0)
+	currently_selected_piece = piece
+	var result = RookLogic(piece_pos, king_pos)
+	currently_selected_piece = temp_current
+	return result
+
+func CanBishopCapture(piece_pos, king_pos):
+	var temp_current = currently_selected_piece
+	var piece = GridStuff.get_child(piece_pos).get_child(0)
+	currently_selected_piece = piece
+	var result = BishopLogic(piece_pos, king_pos)
+	currently_selected_piece = temp_current
+	return result
+
+func CanKnightCapture(piece_pos, king_pos):
+	var temp_current = currently_selected_piece
+	var piece = GridStuff.get_child(piece_pos).get_child(0)
+	currently_selected_piece = piece
+	var result = KnightLogic(piece_pos, king_pos)
+	currently_selected_piece = temp_current
+	return result
+
+func CanQueenCapture(piece_pos, king_pos):
+	var temp_current = currently_selected_piece
+	var piece = GridStuff.get_child(piece_pos).get_child(0)
+	currently_selected_piece = piece
+	var result = QueenLogic(piece_pos, king_pos)
+	currently_selected_piece = temp_current
+	return result
+
+func CanKingCapture(piece_pos, king_pos):
+	var temp_current = currently_selected_piece
+	var piece = GridStuff.get_child(piece_pos).get_child(0)
+	currently_selected_piece = piece
+	var result = KingLogic(piece_pos, king_pos)
+	currently_selected_piece = temp_current
+	return result
+
+# Check for checkmate or stalemate
+func IsCheckmate(color_index):
+	if not IsKingInCheck(color_index):
+		return false
+	
+	# Check if any move gets out of check
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			if piece.get_meta("piece_color_index") == color_index:
+				# Try all possible moves for this piece
+				for j in range(64):
+					var target_tile = GridStuff.get_child(j)
+					# Can't move to a square with your own piece (except castling which we haven't implemented)
+					if target_tile.get_child_count() > 0:
+						if target_tile.get_child(0).get_meta("piece_color_index") == color_index:
+							continue
+					
+					# Set the piece as currently selected for move validation
+					var temp_current = currently_selected_piece
+					currently_selected_piece = piece
+					
+					var piece_type = piece.get_meta("piece_type")
+					var can_move = false
+					match piece_type:
+						"P":
+							can_move = PawnLogic(i, j)
+						"R":
+							can_move = RookLogic(i, j)
+						"B":
+							can_move = BishopLogic(i, j)
+						"N":
+							can_move = KnightLogic(i, j)
+						"Q":
+							can_move = QueenLogic(i, j)
+						"K":
+							can_move = KingLogic(i, j)
+					
+					currently_selected_piece = temp_current
+					
+					if can_move and not WouldKingBeInCheck(i, j, color_index):
+						# For king moves, also check if the target square is attacked
+						if piece_type == "K" and IsSquareAttacked(j, color_index):
+							continue
+						return false  # Found a legal move
+	
+	return true  # No legal moves found, it's checkmate
+
+func IsStalemate(color_index):
+	if IsKingInCheck(color_index):
+		return false
+	
+	# Check if any legal move exists
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			if piece.get_meta("piece_color_index") == color_index:
+				for j in range(64):
+					var target_tile = GridStuff.get_child(j)
+					if target_tile.get_child_count() > 0:
+						if target_tile.get_child(0).get_meta("piece_color_index") == color_index:
+							continue
+					
+					# Set the piece as currently selected for move validation
+					var temp_current = currently_selected_piece
+					currently_selected_piece = piece
+					
+					var piece_type = piece.get_meta("piece_type")
+					var can_move = false
+					match piece_type:
+						"P":
+							can_move = PawnLogic(i, j)
+						"R":
+							can_move = RookLogic(i, j)
+						"B":
+							can_move = BishopLogic(i, j)
+						"N":
+							can_move = KnightLogic(i, j)
+						"Q":
+							can_move = QueenLogic(i, j)
+						"K":
+							can_move = KingLogic(i, j)
+					
+					currently_selected_piece = temp_current
+					
+					if can_move and not WouldKingBeInCheck(i, j, color_index):
+						# For king moves, also check if the target square is attacked
+						if piece_type == "K" and IsSquareAttacked(j, color_index):
+							continue
+						return false  # Found a legal move
+	
+	return true  # No legal moves, it's stalemate
+	
+func print_grid_to_terminal():
+	print("\n--- Current Board State ---")
+	print("    0      1      2      3      4      5      6      7")
+	print("    -------------------------------------------------")
+	#
+	## Start the very first row header
+	var board_string = "0 | "
+	#
+	## Loop through all 64 spaces on your 8x8 board
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
+		#
+		## Format the iterator 'i' to always look like two digits (e.g., 05, 12, 63)
+		var i_str = str(i)
+		if i < 10:
+			i_str = "0" + i_str
+			#
+		## Check if the tile has a piece (Label) on it
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			var piece_char = piece.get_meta("piece_type")
+			var team = piece.get_meta("piece_color_index")
+			#
+			## White pieces upper-case, Black pieces lower-case + iterator
+			if team == 0:
+				board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
+			else:
+				board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
+		else:
+			## Empty square marker + iterator
+			board_string += "[.:" + i_str + "] "
+		#
+		## Handle the end of a row
+		if (i + 1) % 8 == 0:
+			board_string += "\n"
+			#
+			## Calculate the next row number index
+			var next_row_index = (i + 1) / 8
+			if next_row_index < 8:
+				board_string += str(next_row_index) + " | "
+#
+	print(board_string)
+	print("---------------------------")
+
+func IsOccupied(pos):
+	var tile = GridStuff.get_child(pos)
+	return tile.get_child_count() > 0
+		
+func GetTilePieceColor(pos):
+	var tile = GridStuff.get_child(pos)
+	var piece = tile.get_child(0)
+	return piece.get_meta("piece_color_index")
+
+func RookLogic(current_pos, target_pos):		
+	#Check up direction
+	for i in range(8):
+		var move_pos = current_pos - 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos < 8*1:
+			break
+			
+	#Check down direction
+	for i in range(8):
+		var move_pos = current_pos + 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos >= 8*7:
+			break
+	
+	return false
+
+func QueenLogic(current_pos, target_pos):
+	var diff = target_pos - current_pos
+	var step = 0
+	
+	# Determine direction
+	# Horizontal (row check)
+	if int(current_pos / 8) == int(target_pos / 8):
+		step = 1 if diff > 0 else -1
+	# Vertical (column check)
+	elif diff % 8 == 0:
+		step = 8 if diff > 0 else -8
+	# Diagonal (down-right or up-left)
+	elif diff % 9 == 0:
+		step = 9 if diff > 0 else -9
+	# Diagonal (down-left or up-right)
+	elif diff % 7 == 0:
+		step = 7 if diff > 0 else -7
+	else:
+		return false # Not a straight or diagonal line
+
+	# Loop through the path to check for collisions
+	var check_pos = current_pos + step
+	while check_pos != target_pos:
+		if IsOccupied(check_pos):
+			return false # Piece in the way!
+		check_pos += step
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+			
+	return true
+
+#validiates pawn logic
+func PawnLogic(current_pos, target_pos):
+	#check piece color
+	if currently_selected_piece.get_meta("piece_color_index") == 0:
+		var f1 = -(8*1)
+		var f2 = -(8*2)
+		var fl = -(8*1)-1
+		var fr = -(8*1)+1
+		
+		#check forward1
+		if target_pos == current_pos + f1:
+			#check if piece is occupied 
+			if IsOccupied(current_pos + f1):
+				return false
+				
+			return true
+		#check forward2 and is on starting rank
+		if target_pos == current_pos + f2 and current_pos >= (8*6):
+			#check if position behind is occupied
+			if IsOccupied(current_pos + f1):
+				return false
+			
+			if IsOccupied(current_pos + f2):
+				return false
+			
+			return true
+		
+		#check forward_left and that it isn't on the far left
+		if target_pos == current_pos+fl and current_pos%8 != 0:
+			if not IsOccupied(current_pos+fl):
+				return false
+			
+			var col = GetTilePieceColor(current_pos+fl)
+			if col == 0:
+				return false
+				
+			return true
+			
+		#check forward_right and that it isn't on the far right
+		if target_pos == current_pos+fr and current_pos%8 != 7:
+			if not IsOccupied(current_pos+fr):
+				return false
+			
+			var col = GetTilePieceColor(current_pos+fr)
+			if col == 0:
+				return false
+				
+			return true
+		return false
+	else:
+		var f1 = (8*1)
+		var f2 = (8*2)
+		var fl = (8*1)-1
+		var fr = (8*1)+1
+		
+		#check forward1
+		if target_pos == current_pos + f1:
+			#check if piece is occupied 
+			if IsOccupied(current_pos + f1):
+				return false
+				
+			return true
+		#check forward2 and is on starting rank
+		if target_pos == current_pos + f2 and current_pos < (8*2):
+			#check if position behind is occupied
+			if IsOccupied(current_pos + f1):
+				return false
+			
+			if IsOccupied(current_pos + f2):
+				return false
+			
+			return true
+		
+		#check forward_left and that it isn't on the far left
+		if target_pos == current_pos + fl and current_pos%8 != 0:
+			if not IsOccupied(current_pos + fl):
+				return false
+			
+			var col = GetTilePieceColor(current_pos + fl)
+			if col == 1:
+				return false
+				
+			return true
+			
+		#check forward_right and that it isn't on the far right
+		if target_pos == current_pos + fr and current_pos%8 != 7:
+			if not IsOccupied(current_pos + fr):
+				return false
+			
+			var col = GetTilePieceColor(current_pos + fr)
+			if col == 1:
+				return false
+				
+			return true
+		return false
+
+func KnightLogic(current_pos, target_pos):
+	#piece color doesn't matter for movement pattern, only for capture
+	#made to go in the L shape up 2, left/right 1
+	if target_pos == current_pos - 17 and current_pos % 8 != 0:
 		pass
-	pass
-pass	
+	elif target_pos == current_pos - 15 and current_pos % 8 != 7:
+		pass
+	# made to go in the L shape down 2, left/right 1 
+	elif target_pos == current_pos + 15 and current_pos % 8 != 0:
+		pass
+	elif target_pos == current_pos + 17 and current_pos % 8 != 7:
+		pass
+	# made to go in the L shape up 1, left/right 2
+	elif target_pos == current_pos - 10 and current_pos % 8 > 1:
+		pass
+	elif target_pos == current_pos - 6 and current_pos % 8 < 6:
+		pass
+	# made to go in the L shape down 1, left/right 2
+	elif target_pos == current_pos + 6 and current_pos % 8 > 1:
+		pass
+	elif target_pos == current_pos + 10 and current_pos % 8 < 6:
+		pass
+	else:
+		return false
 
-#when we touch the square the piece can go on	
+	# if you can move there
+	if IsOccupied(target_pos):
+		var col = GetTilePieceColor(target_pos)
+		# your piece
+		if col == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+		# opponent piece
+		return true
+	# empty
+	return true
+
+func BishopLogic(current_pos, target_pos):
+	var diff = target_pos - current_pos
+	var step = 0
+	
+	# Determine if the target is on a valid diagonal
+	# We use the absolute value of the horizontal distance to ensure 
+	# we don't "jump" across the board boundaries (e.g., from col 7 to col 0).
+	var col_diff = abs((target_pos % 8) - (current_pos % 8))
+	var row_diff = abs(int(target_pos / 8) - int(current_pos / 8))
+	
+	# Bishops must move the same number of squares horizontally and vertically
+	if col_diff != row_diff:
+		return false
+	
+	# Set the step based on direction
+	if diff % 9 == 0:
+		step = 9 if diff > 0 else -9
+	elif diff % 7 == 0:
+		step = 7 if diff > 0 else -7
+	else:
+		return false # Not a valid diagonal line
+
+	# Loop through the path to check for collisions
+	var check_pos = current_pos + step
+	while check_pos != target_pos:
+		if IsOccupied(check_pos):
+			return false # Piece in the way!
+		check_pos += step
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+			
+	return true
+
+func KingLogic(current_pos, target_pos):
+	# Calculate coordinate changes
+	var curr_col = current_pos % 8
+	var curr_row = int(current_pos / 8)
+	var target_col = target_pos % 8
+	var target_row = int(target_pos / 8)
+	
+	# Calculate the absolute difference in rows and columns
+	var row_diff = abs(target_row - curr_row)
+	var col_diff = abs(target_col - curr_col)
+	
+	# The King can move at most 1 square in any direction
+	# row_diff <= 1 and col_diff <= 1 covers all 8 adjacent squares
+	# We exclude the case where the King doesn't move at all (row_diff=0 and col_diff=0)
+	if row_diff > 1 or col_diff > 1 or (row_diff == 0 and col_diff == 0):
+		return false
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
+			return false
+			
+	return true
+
+# Highlights the Label yellow when hovering over its parent tile
+func _on_tile_mouse_entered(TargetSquare):
+	if TargetSquare.get_child_count() > 0:
+		var piece = TargetSquare.get_child(0)
+		if piece is Label and currently_selected_piece == null:
+			piece.add_theme_color_override("font_color", Color.YELLOW)
+
+# Restores the original Label color when leaving the tile
+func _on_tile_mouse_exited(TargetSquare):
+	if TargetSquare.get_child_count() > 0:
+		var piece = TargetSquare.get_child(0)
+		if piece is Label and piece.has_meta("original_color") and currently_selected_piece == null:
+			var old_color = piece.get_meta("original_color")
+			piece.add_theme_color_override("font_color", old_color)
+
+# Highlights the king when in check
+func HighlightKingInCheck(color_index):
+	var king_pos = FindKing(color_index)
+	if king_pos != -1:
+		var king_tile = GridStuff.get_child(king_pos)
+		if king_tile.get_child_count() > 0:
+			var king_piece = king_tile.get_child(0)
+			king_piece.add_theme_color_override("font_color", Color.RED)
+			# Flash the tile
+			var tween = create_tween()
+			tween.tween_property(king_tile, "color", Color.RED, 0.3)
+			tween.tween_property(king_tile, "color", king_tile.get_meta("board_color"), 0.3)
+			tween.set_loops(3)
+
+#this only works when it is confirmed that the move is valid from check move
+func moveoreatpiece(selectedpiece, targetsquare):
+	# Check if target square has an enemy piece to eat
+	if targetsquare.get_child_count() > 0:
+		var enemy_piece = targetsquare.get_child(0)
+		# Print out what is being eaten cleanly using metadata
+		var enemy_type = enemy_piece.get_meta("piece_type")
+		var enemy_team = ColourOfPieces[enemy_piece.get_meta("piece_color_index")]
+		
+		# Check if it's a friendly piece (shouldn't happen due to CheckMove, but safety first)
+		if enemy_piece.get_meta("piece_color_index") == selectedpiece.get_meta("piece_color_index"):
+			print("same colour")
+			return
+		
+		# Normal capture
+		print("EATING: ", enemy_team, " ", enemy_type)
+		targetsquare.remove_child(enemy_piece)
+		enemy_piece.queue_free()
+		# Perform the move
+		selectedpiece.get_parent().remove_child(selectedpiece)
+		targetsquare.add_child(selectedpiece)
+		IncrementTurn()
+	else:
+		print("Moving Piece to this tile")
+		selectedpiece.get_parent().remove_child(selectedpiece)
+		targetsquare.add_child(selectedpiece)
+		IncrementTurn()
+	
+	# After the move, check for check, checkmate, or stalemate
+	check_game_state()
+
+func check_game_state():
+	var opponent_color = turn % 2  # Now it's the opponent's turn (since we just incremented)
+	
+	if IsKingInCheck(opponent_color):
+		print(ColourOfPieces[opponent_color] + " is in CHECK!")
+		HighlightKingInCheck(opponent_color)
+		
+		if IsCheckmate(opponent_color):
+			var winner = "WHITE" if opponent_color == 1 else "BLACK"
+			print("CHECKMATE! " + winner + " wins!")
+			ShowWinner(winner)
+	elif IsStalemate(opponent_color):
+		print("STALEMATE! It's a draw!")
+		ShowWinner("STALEMATE - It's a draw!")
+
+# Unified input logic: handles both selection, moving, and capturing
+#This is what selects the piece
 func _on_square_gui_input(event, TargetSquare):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			if event.button_index == MOUSE_BUTTON_LEFT and currenty_selected_piece != null:
-				print("Clicked to moved")
-				currenty_selected_piece.get_parent().remove_child(currenty_selected_piece)
-				TargetSquare.add_child(currenty_selected_piece)
-				currenty_selected_piece = null
-			pass
-		pass
-	pass	
-pass
-# Called when the node enters the scene tree for the first time.
+	if game_over:
+		return
+		
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		
+		# CASE 1: No piece is currently selected -> Pick one up
+		if currently_selected_piece == null:
+			if TargetSquare.get_child_count() > 0:
+				currently_selected_piece = TargetSquare.get_child(0)
+				# Check if it's the right color's turn
+				if currently_selected_piece.get_meta("piece_color_index") != turn % 2:
+					currently_selected_piece = null
+					return
+				print("Selected piece: ", currently_selected_piece.get_meta("piece_type"))
+		
+		# CASE 2: A piece is already selected -> Try to move or capture
+		else:
+			# Touch move no deselect
+			if currently_selected_piece.get_parent() == TargetSquare:
+				var old_color = currently_selected_piece.get_meta("original_color")
+				currently_selected_piece.add_theme_color_override("font_color", old_color)
+				currently_selected_piece = null
+				return
+				
+			var target_pos = TargetSquare.get_index()
+			var current_pos = currently_selected_piece.get_parent().get_index()
+			
+			if CheckMove(current_pos, target_pos):
+				moveoreatpiece(currently_selected_piece, TargetSquare)
+				currently_selected_piece = null
+			else:
+				print("Invalid move - would leave king in check, illegal move, or king cannot move there")
+
 func _ready() -> void:
 	GridStuff.columns = 8
-	GridStuff.custom_minimum_size = Vector2(40,40)
-	for i in GridStuff.columns:
-		for t in range(8):
+	GridStuff.custom_minimum_size = Vector2(40, 40)
+	
+	# Create the CheckIndicator if it doesn't exist
+	if not CheckIndicator:
+		var indicator = Label.new()
+		indicator.name = "CheckIndicator"
+		indicator.text = ""
+		indicator.position = Vector2(10, 10)
+		indicator.add_theme_font_size_override("font_size", 24)
+		add_child(indicator)
+		CheckIndicator = indicator
+	
+	# Define your piece arrays
+	var white = ["♔", "♕", "♖", "♗", "♘", "♙"]
+	var black = ["♔", "♕", "♖", "♗", "♘", "♙"]
+	
+	# Create the 8x8 grid
+	for i in range(8): # Rows
+		for t in range(8): # Columns
 			var new_colorrect = ColorRect.new()
-			if (i+t) % 2 == 0:
-				new_colorrect.color=Color(0.803, 0.81, 0.818, 1.0)
-			else: 
-				new_colorrect.color=Color(0.63, 0.773, 0.456, 1.0)
-			new_colorrect.custom_minimum_size=Vector2(40,40)
-			if (i == 0 and t == 0) or (i == 0 and t == 7):
-				PlacePiece(new_colorrect,"R",1)
-			if (i == 7 and t == 0) or (i == 7 and t == 7):
-				PlacePiece(new_colorrect,"R",0)
-			if (i == 0 and t == 1) or (i == 0 and t == 6):
-				PlacePiece(new_colorrect,"H",1)
-			if (i == 7 and t == 1) or (i == 7 and t == 6):
-				PlacePiece(new_colorrect,"H",0)
-			if (i == 0 and t == 2) or (i == 0 and t == 5):
-				PlacePiece(new_colorrect,"B",1)
-			if (i == 7 and t == 2) or (i == 7 and t == 5):
-				PlacePiece(new_colorrect,"B",0)
-			if (i == 0 and t == 3):
-				PlacePiece(new_colorrect,"Q",1)
-			if (i == 7 and t == 3):
-				PlacePiece(new_colorrect,"Q",0)
-			if (i == 0 and t == 4):
-				PlacePiece(new_colorrect,"K",1)
-			if (i == 7 and t == 4):
-				PlacePiece(new_colorrect,"K",0)
-			if i == 1:
-				PlacePiece(new_colorrect,"P",1)
-			if i == 6:
-				PlacePiece(new_colorrect,"P",0)
+			
+			# Board color logic
+			var base_color = Color(0.803, 0.81, 0.818, 1.0) if (i + t) % 2 == 0 else Color(0.63, 0.773, 0.456, 1.0)
+			new_colorrect.color = base_color
+			new_colorrect.custom_minimum_size = Vector2(40, 40)
+			new_colorrect.set_meta("board_color", base_color)
+			
+			# Spawning Logic using the defined symbols
+			if (i == 0 and t == 0) or (i == 0 and t == 7): PlacePiece(new_colorrect, black[2], "R", 1)
+			elif (i == 7 and t == 0) or (i == 7 and t == 7): PlacePiece(new_colorrect, white[2], "R", 0)
+			elif (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect, black[4], "N", 1)
+			elif (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect, white[4], "N", 0)
+			elif (i == 0 and t == 2) or (i == 0 and t == 5): PlacePiece(new_colorrect, black[3], "B", 1)
+			elif (i == 7 and t == 2) or (i == 7 and t == 5): PlacePiece(new_colorrect, white[3], "B", 0)
+			elif (i == 0 and t == 3): PlacePiece(new_colorrect, black[1], "Q", 1)
+			elif (i == 7 and t == 3): PlacePiece(new_colorrect, white[1], "Q", 0)
+			elif (i == 0 and t == 4): PlacePiece(new_colorrect, black[0], "K", 1)
+			elif (i == 7 and t == 4): PlacePiece(new_colorrect, white[0], "K", 0)
+			elif i == 1: PlacePiece(new_colorrect, black[5], "P", 1)
+			elif i == 6: PlacePiece(new_colorrect, white[5], "P", 0)
+			
+			# Connect Signals
+			new_colorrect.mouse_filter = Control.MOUSE_FILTER_STOP
+			new_colorrect.mouse_entered.connect(_on_tile_mouse_entered.bind(new_colorrect))
+			new_colorrect.mouse_exited.connect(_on_tile_mouse_exited.bind(new_colorrect))
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
+			
 			GridStuff.add_child(new_colorrect)
-	pass
+	
+	UpdateTurnColour()
 
-func playermovepiece():
-	pass
+func ShowWinner(winner_text):
+	game_over = true
+	
+	var canvas = CanvasLayer.new()
+	add_child(canvas)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
+	# Background panel
+	var panel = Panel.new()
+	panel.size = Vector2(400, 200)
+	panel.position = Vector2(
+		(get_viewport().size.x - panel.size.x) / 2,
+		(get_viewport().size.y - panel.size.y) / 2
+	)
+	canvas.add_child(panel)
+
+	# Winner text
+	var label = Label.new()
+	label.text = winner_text
+	label.position = Vector2(40, 40)
+	label.size = Vector2(320, 50)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 32)
+	panel.add_child(label)
+
+	# Reset button
+	var button = Button.new()
+	button.text = "Return To Menu"
+	button.size = Vector2(200, 50)
+	button.position = Vector2(100, 120)
+	panel.add_child(button)
+
+	button.pressed.connect(func():
+		get_tree().change_scene_to_file("res://Menu.tscn")
+	)
+
 func _process(delta: float) -> void:
+	# Update check indicator
+	if CheckIndicator:
+		var current_color = turn % 2
+		if IsKingInCheck(current_color):
+			CheckIndicator.text = ColourOfPieces[current_color] + " IS IN CHECK!"
+			CheckIndicator.add_theme_color_override("font_color", Color.RED)
+		else:
+			CheckIndicator.text = ""
 	pass
+
+func UpdateTurnColour():
+	if turn%2 == 0:
+		TurnColour.color = Color(1,1,1)
+	else:
+		TurnColour.color = Color(0,0,0)
+		
+func IncrementTurn():
+	turn += 1
+	UpdateTurnColour()
