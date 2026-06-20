@@ -6,20 +6,28 @@ extends Control
 var ColourOfPieces = ["WHITE","BLACK"]
 var currently_selected_piece = null
 
-func PlacePiece(new_colorrect, PieceType, PieceColour):
+func PlacePiece(new_colorrect, PieceSymbol, PieceType, PieceColour):
 	var new_label = Label.new()
-	new_label.text = PieceType
+	new_label.text = PieceSymbol 
+	
+	# --- ADD THIS TO CHANGE FONT SIZE ---
+	# Adjust 30 to whatever pixel size you need
+	new_label.add_theme_font_size_override("font_size", 30) 
+	
+	# Center the text in the square (optional, but highly recommended)
+	new_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	new_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	new_label.custom_minimum_size = new_colorrect.custom_minimum_size
+	# ------------------------------------
+	
 	new_colorrect.add_child(new_label)
 	
-	# Pieces ignore the mouse so events pass straight to the tile
 	new_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
-	# Set piece colors and save metadata on the Label itself
 	var chosen_color = Color.from_string(ColourOfPieces[PieceColour], Color.WHITE)
 	new_label.add_theme_color_override("font_color", chosen_color)
 	new_label.set_meta("original_color", chosen_color)
-	new_label.set_meta("piece_type", PieceType)
-	# Storing numeric team color (0 for White, 1 for Black) to help with future rules
+	new_label.set_meta("piece_type", PieceType) 
 	new_label.set_meta("piece_color_index", PieceColour)
 
 func CheckMove(current_pos, target_pos):
@@ -33,54 +41,55 @@ func CheckMove(current_pos, target_pos):
 		pass
 	elif piece_type == "N":
 		return KnightLogic(current_pos, target_pos)
+		pass
 	elif piece_type == "Q":
 		return QueenLogic(current_pos, target_pos)
 	elif piece_type == "K":
 		pass
 	
-#func print_grid_to_terminal():
-	#print("\n--- Current Board State ---")
-	#print("    0      1      2      3      4      5      6      7")
-	#print("    -------------------------------------------------")
+func print_grid_to_terminal():
+	print("\n--- Current Board State ---")
+	print("    0      1      2      3      4      5      6      7")
+	print("    -------------------------------------------------")
 	#
 	## Start the very first row header
-	#var board_string = "0 | "
+	var board_string = "0 | "
 	#
 	## Loop through all 64 spaces on your 8x8 board
-	#for i in range(64):
-		#var tile = GridStuff.get_child(i)
+	for i in range(64):
+		var tile = GridStuff.get_child(i)
 		#
 		## Format the iterator 'i' to always look like two digits (e.g., 05, 12, 63)
-		#var i_str = str(i)
-		#if i < 10:
-			#i_str = "0" + i_str
+		var i_str = str(i)
+		if i < 10:
+			i_str = "0" + i_str
 			#
 		## Check if the tile has a piece (Label) on it
-		#if tile.get_child_count() > 0:
-			#var piece = tile.get_child(0)
-			#var piece_char = piece.get_meta("piece_type")
-			#var team = piece.get_meta("piece_color_index")
+		if tile.get_child_count() > 0:
+			var piece = tile.get_child(0)
+			var piece_char = piece.get_meta("piece_type")
+			var team = piece.get_meta("piece_color_index")
 			#
 			## White pieces upper-case, Black pieces lower-case + iterator
-			#if team == 0:
-				#board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
-			#else:
-				#board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
-		#else:
+			if team == 0:
+				board_string += "[" + piece_char.to_upper() + ":" + i_str + "] "
+			else:
+				board_string += "[" + piece_char.to_lower() + ":" + i_str + "] "
+		else:
 			## Empty square marker + iterator
-			#board_string += "[.:" + i_str + "] "
+			board_string += "[.:" + i_str + "] "
 		#
 		## Handle the end of a row
-		#if (i + 1) % 8 == 0:
-			#board_string += "\n"
+		if (i + 1) % 8 == 0:
+			board_string += "\n"
 			#
 			## Calculate the next row number index
-			#var next_row_index = (i + 1) / 8
-			#if next_row_index < 8:
-				#board_string += str(next_row_index) + " | "
+			var next_row_index = (i + 1) / 8
+			if next_row_index < 8:
+				board_string += str(next_row_index) + " | "
 #
-	#print(board_string)
-	#print("---------------------------")
+	print(board_string)
+	print("---------------------------")
 		#
 
 func IsOccupied(pos):
@@ -90,70 +99,76 @@ func IsOccupied(pos):
 		return true
 	else:
 		return false
+		
 func GetTilePieceColor(pos):
 	var tile = GridStuff.get_child(pos)
 	var piece = tile.get_child(0)
 	return piece.get_meta("piece_color_index")
 
-func QueenLogic(current_pos, target_pos):
-	#check forward line one by one to stop the queen from teleporting
-	#lets figure out the direction
-	#this is for checking forward and backwards
-	if target_pos%8 == current_pos%8:
-		print("This is forward or backwards")
-	#this is for diagonal
-	if target_pos%7 == current_pos%7:
-		print("This is going diagnonal right")
-	if target_pos%9 == current_pos%9:
-		print("This is going diagnonal left")
-	if target_pos%7 == current_pos%7:
-		print("This is going diagnonal right")
-	if target_pos%9 == current_pos%9:
-		print("This is going diagnonal left")
-func KnightLogic(current_pos, target_pos):
-	#piece color
-	if currently_selected_piece.get_meta("piece_color_index") == 0:
-		#made to go in the L shape up 2, left/right 1
-		if target_pos == current_pos - 17 and current_pos % 8 != 0:
-			pass
-		elif target_pos == current_pos - 15 and current_pos % 8 != 7:
-			pass
-
-	# made to go in the L shape down 2, left/right 1 
-		elif target_pos == current_pos + 15 and current_pos % 8 != 0:
-			pass
-		elif target_pos == current_pos + 17 and current_pos % 8 != 7:
-			pass
-
-	# made to go in the L shape up 1, left/right 2
-		elif target_pos == current_pos - 10 and current_pos % 8 > 1:
-			pass
-		elif target_pos == current_pos - 6 and current_pos % 8 < 6:
-			pass
-
-	# made to go in the L shape down 1, left/right 2
-		elif target_pos == current_pos + 6 and current_pos % 8 > 1:
-			pass
-		elif target_pos == current_pos + 10 and current_pos % 8 < 6:
-			pass
+func RookLogic(current_pos, target_pos):		
+	#Check up direction
+	for i in range(8):
+		var move_pos = current_pos - 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos < 8*1:
+			break
 			
-		else:
+	#Check down direction
+	for i in range(8):
+		var move_pos = current_pos + 8*i
+		if i>0:
+			if move_pos == target_pos:
+				if IsOccupied(move_pos):
+					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
+						return false
+					return true
+				return true
+			if IsOccupied(move_pos):
+				break
+		if move_pos >= 8*7:
+			break	
+
+func QueenLogic(current_pos, target_pos):
+	var diff = target_pos - current_pos
+	var step = 0
+	
+	# Determine direction
+	# Horizontal (row check)
+	if int(current_pos / 8) == int(target_pos / 8):
+		step = 1 if diff > 0 else -1
+	# Vertical (column check)
+	elif diff % 8 == 0:
+		step = 8 if diff > 0 else -8
+	# Diagonal (down-right or up-left)
+	elif diff % 9 == 0:
+		step = 9 if diff > 0 else -9
+	# Diagonal (down-left or up-right)
+	elif diff % 7 == 0:
+		step = 7 if diff > 0 else -7
+	else:
+		return false # Not a straight or diagonal line
+
+	# Loop through the path to check for collisions
+	var check_pos = current_pos + step
+	while check_pos != target_pos:
+		if IsOccupied(check_pos):
+			return false # Piece in the way!
+		check_pos += step
+		
+	# Final check: Is the destination occupied by own piece?
+	if IsOccupied(target_pos):
+		if GetTilePieceColor(target_pos) == currently_selected_piece.get_meta("piece_color_index"):
 			return false
-
-		# if you can move there
-		if IsOccupied(target_pos):
-			var col = GetTilePieceColor(target_pos)
-
-			# your piece
-			if col == currently_selected_piece.get_meta("piece_color_index"):
-				return false
-			# opponent piece
-			return true
-		# empty
-		return true
-	return false
-
-
+			
+	return true
 #validiates pawn logic
 func PawnLogic(current_pos, target_pos):
 	#check piece color
@@ -258,68 +273,52 @@ func PawnLogic(current_pos, target_pos):
 			return true
 		return false
 
-func RookLogic(current_pos, target_pos):
-	#Check up direction
-	for i in range(8):
-		var move_pos = current_pos - 8*i
-		if i>0:
-			if move_pos == target_pos:
-				if IsOccupied(move_pos):
-					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
-						return false
-					return true
-				return true
-			if IsOccupied(move_pos):
-				break
-		if move_pos < 8*1:
-			break
+func KnightLogic(current_pos, target_pos):
+	#piece color
+	if currently_selected_piece.get_meta("piece_color_index") == 0:
+		#made to go in the L shape up 2, left/right 1
+		if target_pos == current_pos - 17 and current_pos % 8 != 0:
+			pass
+		elif target_pos == current_pos - 15 and current_pos % 8 != 7:
+			pass
+
+	# made to go in the L shape down 2, left/right 1 
+		elif target_pos == current_pos + 15 and current_pos % 8 != 0:
+			pass
+		elif target_pos == current_pos + 17 and current_pos % 8 != 7:
+			pass
+
+	# made to go in the L shape up 1, left/right 2
+		elif target_pos == current_pos - 10 and current_pos % 8 > 1:
+			pass
+		elif target_pos == current_pos - 6 and current_pos % 8 < 6:
+			pass
+
+	# made to go in the L shape down 1, left/right 2
+		elif target_pos == current_pos + 6 and current_pos % 8 > 1:
+			pass
+		elif target_pos == current_pos + 10 and current_pos % 8 < 6:
+			pass
 			
-	#Check down direction
-	for i in range(8):
-		var move_pos = current_pos + 8*i
-		if i>0:
-			if move_pos == target_pos:
-				if IsOccupied(move_pos):
-					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
-						return false
-					return true
-				return true
-			if IsOccupied(move_pos):
-				break
-		if move_pos >= 8*7:
-			break
+		else:
+			return false
+
+		# if you can move there
+		if IsOccupied(target_pos):
+			var col = GetTilePieceColor(target_pos)
+
+			# your piece
+			if col == currently_selected_piece.get_meta("piece_color_index"):
+				return false
+			# opponent piece
+			return true
+		# empty
+		return true
+	return false
+
+func BishopLogic(current_pos, target_pos):
+	pass
 	
-	#Check left direction
-	for i in range(8):
-		var move_pos = current_pos - i
-		if i>0:
-			if move_pos == target_pos:
-				if IsOccupied(move_pos):
-					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
-						return false
-					return true
-				return true
-			if IsOccupied(move_pos):
-				break
-		if move_pos%8 == 0:
-			break
-	
-	#Check left direction
-	for i in range(8):
-		var move_pos = current_pos + i
-		if i>0:
-			if move_pos == target_pos:
-				if IsOccupied(move_pos):
-					if GetTilePieceColor(move_pos) == GetTilePieceColor(current_pos):
-						return false
-					return true
-				return true
-			if IsOccupied(move_pos):
-				break
-		if move_pos%8 == 7:
-			break
-			
-	return false	
 
 # Highlights the Label yellow when hovering over its parent tile
 func _on_tile_mouse_entered(TargetSquare):
@@ -394,46 +393,48 @@ func _on_square_gui_input(event, TargetSquare):
 				moveoreatpiece(currently_selected_piece, TargetSquare)
 				currently_selected_piece = null
 			
-# Called when the node enters the scene tree for the first time.
+
+
 func _ready() -> void:
 	GridStuff.columns = 8
-	GridStuff.custom_minimum_size = Vector2(40,40)
+	GridStuff.custom_minimum_size = Vector2(40, 40)
 	
-	for i in GridStuff.columns:
-		for t in range(8):
+	# Define your piece arrays
+	var white = ["♔", "♕", "♖", "♗", "♘", "♙"]
+	var black = ["♔", "♕", "♖", "♗", "♘", "♙"]
+	
+	# Create the 8x8 grid
+	for i in range(8): # Rows
+		for t in range(8): # Columns
 			var new_colorrect = ColorRect.new()
 			
-			# Determine board pattern colors
-			var base_color = Color(0.803, 0.81, 0.818, 1.0) if (i+t) % 2 == 0 else Color(0.63, 0.773, 0.456, 1.0)
+			# Board color logic
+			var base_color = Color(0.803, 0.81, 0.818, 1.0) if (i + t) % 2 == 0 else Color(0.63, 0.773, 0.456, 1.0)
 			new_colorrect.color = base_color
-			new_colorrect.custom_minimum_size = Vector2(40,40)
-			
-			# Store the original tile color so we can clear highlights safely
+			new_colorrect.custom_minimum_size = Vector2(40, 40)
 			new_colorrect.set_meta("board_color", base_color)
 			
-			# Spawning Logic
-			if (i == 0 and t == 0) or (i == 0 and t == 7): PlacePiece(new_colorrect,"R",1)
-			if (i == 7 and t == 0) or (i == 7 and t == 7): PlacePiece(new_colorrect,"R",0)
-			if (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect,"N",1)
-			if (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect,"N",0)
-			if (i == 0 and t == 2) or (i == 0 and t == 5): PlacePiece(new_colorrect,"B",1)
-			if (i == 7 and t == 2) or (i == 7 and t == 5): PlacePiece(new_colorrect,"B",0)
-			if (i == 0 and t == 3): PlacePiece(new_colorrect,"Q",1)
-			if (i == 7 and t == 3): PlacePiece(new_colorrect,"Q",0)
-			if (i == 0 and t == 4): PlacePiece(new_colorrect,"K",1)
-			if (i == 7 and t == 4): PlacePiece(new_colorrect,"K",0)
-			if i == 1: PlacePiece(new_colorrect,"P",1)
-			if i == 6: PlacePiece(new_colorrect,"P",0)
+			# Spawning Logic using the defined symbols
+			if (i == 0 and t == 0) or (i == 0 and t == 7): PlacePiece(new_colorrect, black[2], "R", 1)
+			elif (i == 7 and t == 0) or (i == 7 and t == 7): PlacePiece(new_colorrect, white[2], "R", 0)
+			elif (i == 0 and t == 1) or (i == 0 and t == 6): PlacePiece(new_colorrect, black[4], "N", 1)
+			elif (i == 7 and t == 1) or (i == 7 and t == 6): PlacePiece(new_colorrect, white[4], "N", 0)
+			elif (i == 0 and t == 2) or (i == 0 and t == 5): PlacePiece(new_colorrect, black[3], "B", 1)
+			elif (i == 7 and t == 2) or (i == 7 and t == 5): PlacePiece(new_colorrect, white[3], "B", 0)
+			elif (i == 0 and t == 3): PlacePiece(new_colorrect, black[1], "Q", 1)
+			elif (i == 7 and t == 3): PlacePiece(new_colorrect, white[1], "Q", 0)
+			elif (i == 0 and t == 4): PlacePiece(new_colorrect, black[0], "K", 1)
+			elif (i == 7 and t == 4): PlacePiece(new_colorrect, white[0], "K", 0)
+			elif i == 1: PlacePiece(new_colorrect, black[5], "P", 1)
+			elif i == 6: PlacePiece(new_colorrect, white[5], "P", 0)
 			
-			# Connect hover signals directly to the tile
+			# Connect Signals
 			new_colorrect.mouse_filter = Control.MOUSE_FILTER_STOP
 			new_colorrect.mouse_entered.connect(_on_tile_mouse_entered.bind(new_colorrect))
 			new_colorrect.mouse_exited.connect(_on_tile_mouse_exited.bind(new_colorrect))
-			
-			# Connect click signals to the tile
 			new_colorrect.gui_input.connect(_on_square_gui_input.bind(new_colorrect))
+			
 			GridStuff.add_child(new_colorrect)
-
 
 func _process(delta: float) -> void:
 	
